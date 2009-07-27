@@ -38,6 +38,7 @@
             var listURL = "{% url admin:cumulus-edit-cloudfiles account.id %}";
             var containerList = $('#changelist');
             var editDiv = $('#cloudfiles-edit');
+            var reloadLink = $('#reload-link');
             var createLink = $('#create-link');
             
             var handleContainerInfo = function(responseText, textStatus, XMLHttpRequest){
@@ -121,6 +122,17 @@
             };
             setListActions();
             
+            reloadLink.click(function(e){
+                e.preventDefault();
+                // show the loader graphic
+                editDiv.html('<p class="loading">Getting list of containers&hellip;</p>');
+                // reload the container list
+                containerList.load(listURL, function(){
+                    setListActions();
+                    editDiv.empty();
+                });
+            });
+            
             createLink.click(function(e){
                 e.preventDefault();
                 editDiv.load($(this).attr('href'), handleCreateForm);
@@ -143,14 +155,13 @@
 {% block content %}
     <div id="content-main">
         {% block object-tools %}
-            <ul class="object-tools">
-              <li>
-                <a href="{% url admin:cumulus-create-container account.id %}" class="addlink" id="create-link">Create Container</a>
-              </li>
-            </ul>
+        <ul class="object-tools">
+            <li><a href="{% url admin:cumulus-edit-cloudfiles account.id %}" id="reload-link">Reload</a></li>
+            <li><a href="{% url admin:cumulus-create-container account.id %}" class="addlink" id="create-link">Create Container</a></li>
+        </ul>
         {% endblock %}
         
-        <p>Account with username {{ account.username }} has {{ container_count }} container{{ container_count|pluralize }} ({{ bytes_used|filesizeformat }} total)</p>
+        <p>Account with username {{ account.username }}</p>
         
         <div class="module" id="changelist">
             {% include "cumulus/includes/container_list.html" %}
