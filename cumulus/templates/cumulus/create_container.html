@@ -1,0 +1,5 @@
+<h2>Create Container</h2>
+<form id="create-form" action="{% url admin:cumulus-create-container account.id %}" method="post" accept-charset="utf-8">
+    {{ form.as_p }}
+    <input type="submit" name="_create" value="Create" id="id_create" />
+</form>
