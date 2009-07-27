@@ -1,0 +1,5 @@
+<h2>Upload File to {{ container }}</h2>
+<form enctype="multipart/form-data" id="upload-form" action="{% url admin:cumulus-upload-file account.id container_name %}" method="post" accept-charset="utf-8">
+    {{ form.as_p }}
+    <input type="submit" name="_upload" value="Upload" id="_id_upload" />
+</form>
