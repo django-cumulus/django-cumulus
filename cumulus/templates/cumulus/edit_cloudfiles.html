@@ -85,7 +85,8 @@
                     editDiv.html('<p class="loading">Getting container info&hellip;</p>');
                     var aTag = $(this);
                     $.get(aTag.attr('href'), handleContainerInfo);
-                });
+                }); // a tags
+                
                 var arrows = $('.list-arrow', '#changelist');
                 arrows.click(function(e){
                     e.preventDefault();
@@ -118,7 +119,20 @@
                             });
                         }
                     }
-                });
+                }); // arrows
+                
+                var uploadLinks = $('.upload-link', '#changelist');
+                uploadLinks.click(function(e){
+                    e.preventDefault();
+                    editDiv.load($(this).attr('href'), function(){
+                        var uploadForm = $('#upload-form');
+                        uploadForm.submit(function(e){
+                            // show the loader graphic
+                            $('#_id_upload').after('<span class="loading">Attempting to upload&hellip;</span>');
+                        });
+                    });
+                }); // upload links
+                
             };
             setListActions();
             

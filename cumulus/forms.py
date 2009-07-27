@@ -12,3 +12,10 @@ class CreateContainerForm(forms.Form):
     Allows a user to supply a name for creating a new container.
     """
     name = forms.CharField()
+
+
+class UploadForm(forms.Form):
+    """
+    Allows a user to upload a file to a container.
+    """
+    upload = forms.FileField(label="File to upload")

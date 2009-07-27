@@ -1,10 +1,11 @@
 import cloudfiles
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from cumulus.models import Account
-from cumulus.forms import CDNForm, CreateContainerForm
+from cumulus.forms import CDNForm, CreateContainerForm, UploadForm
 
 def edit_cloudfiles(request, account_id):
     """
@@ -109,3 +110,34 @@ def container_objects(request, account_id, container_name):
         })
     else:
         return HttpResponse("container_objects should be accessed via ajax.")
+
+
+def upload_file(request, account_id, container_name):
+    """
+    Allows a user to upload a file to the specified container.
+    """
+    account = get_object_or_404(Account, pk=account_id)
+    conn = cloudfiles.get_connection(account.username, account.api_key)
+    container = conn.get_container(container_name)
+    
+    if request.is_ajax():
+        f = UploadForm()
+        return render_to_response('cumulus/upload_file.html', {
+            'account': account,
+            'container': container,
+            'container_name': container_name,
+            'form': f
+        })
+    else:
+        if request.method == 'POST':
+            f = UploadForm(request.POST, request.FILES)
+            if f.is_valid():
+                upload = request.FILES['upload']
+                if upload.multiple_chunks():
+                    content_str = ''.join(chunk for chunk in upload.chunks())
+                else:
+                    content_str = upload.read()
+                obj = container.create_object(upload.name)
+                obj.content_type = upload.content_type
+                obj.send(content_str)
+                return HttpResponseRedirect(reverse('admin:cumulus-edit-cloudfiles', args=(account.id,)))
