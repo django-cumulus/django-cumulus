@@ -11,7 +11,7 @@
         {% for container in containers %}
         <tr class="{% cycle 'row1' 'row2' %}">
             <td>&nbsp;</td>
-            <td><a href="{% url admin:cumulus-container-info account.id container.name %}" class="container-link">{{ container.name }}</a></td>
+            <td><a href="{% url admin:cumulus-container-objects account.id container.name %}" class="list-arrow" rel="{{ container.name|slugify }}">&nbsp;</a> <a href="{% url admin:cumulus-container-info account.id container.name %}" class="container-link">{{ container.name }}</a></td>
             <td>{{ container.count }} item{{ container.count|pluralize }}</td>
             <td>Container</td>
         </tr>

@@ -39,7 +39,6 @@ def container_info(request, account_id, container_name):
         container_name = container.name
         is_public = container.is_public()
         public_uri = is_public and container.public_uri() or None
-        print public_uri
         
         if request.method == 'POST':
             f = CDNForm(request.POST)
@@ -92,3 +91,21 @@ def create_container(request, account_id):
         })
     else:
         return HttpResponse("create_container should be accessed via ajax.")
+
+
+def container_objects(request, account_id, container_name):
+    """
+    Gets a list of objects within a container and their info.
+    """
+    if request.is_ajax():
+        account = get_object_or_404(Account, pk=account_id)
+        conn = cloudfiles.get_connection(account.username, account.api_key)
+        container = conn.get_container(container_name)
+        objects = container.list_objects_info()
+        return render_to_response('cumulus/container_objects.html', {
+            'account': account,
+            'container': container,
+            'objects': objects
+        })
+    else:
+        return HttpResponse("container_objects should be accessed via ajax.")

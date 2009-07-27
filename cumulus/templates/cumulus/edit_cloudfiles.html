@@ -5,8 +5,26 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/changelists.css" />
     <style type="text/css" media="screen">
+        #changelist .list-arrow {
+            display: block;
+            float: left;
+            margin-right: 4px;
+            background: transparent url(http://cdn.cloudfiles.mosso.com/c164791/arrow-closed.gif) no-repeat 50% 50%;
+            width: 10px;
+            height: 15px;
+            text-indent: -9999px;
+        }
+        
+        #changelist .list-arrow.open {
+            background-image: url(http://cdn.cloudfiles.mosso.com/c164791/arrow-open.gif);
+        }
+        
+        #changelist .inserted .name {
+            padding-left: 20px;
+        }
+        
         #cloudfiles-edit .loading {
-            padding-left: 16px;
+            padding-left: 18px;
             background: transparent url(http://cdn.cloudfiles.mosso.com/c164791/django-loader.gif) no-repeat;
         }
     </style>
@@ -66,6 +84,39 @@
                     editDiv.html('<p class="loading">Getting container info&hellip;</p>');
                     var aTag = $(this);
                     $.get(aTag.attr('href'), handleContainerInfo);
+                });
+                var arrows = $('.list-arrow', '#changelist');
+                arrows.click(function(e){
+                    e.preventDefault();
+                    var aTag = $(this);
+                    var trTag = aTag.parent().parent();
+                    var rowClass = trTag.attr('class');
+                    var rel = aTag.attr('rel');
+                    var childRows = $('.'+rel);
+                    
+                    if(aTag.hasClass('open')){
+                        aTag.removeClass('open');
+                        // hide the container's objects
+                        childRows.hide();
+                    } else {
+                        if(childRows.length > 0) {
+                            aTag.addClass('open');
+                            childRows.show()
+                        } else {
+                            // show the loader graphic
+                            editDiv.html('<p class="loading">Getting container objects&hellip;</p>');
+                            $.get(aTag.attr('href'), function(data, textStatus){
+                                aTag.addClass('open');
+                                data = $(data).each(function(){
+                                    // add the parent tr tag's class to these rows
+                                    // also add the container's rel attr as a class
+                                    $(this).addClass(rowClass + " " + rel);
+                                });
+                                trTag.after(data);
+                                editDiv.empty();
+                            });
+                        }
+                    }
                 });
             };
             setListActions();
