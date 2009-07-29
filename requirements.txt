@@ -1,2 +1,1 @@
--e svn+http://code.djangoproject.com/svn/django/trunk/#egg=django
 -e git+git://github.com/rackspace/python-cloudfiles.git#egg=cloudfiles

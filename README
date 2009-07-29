@@ -1,0 +1,5 @@
+==============
+django-cumulus
+==============
+
+The aim of this Django app is to provide an interface to the Rackspace Cloud APIs through Django.
