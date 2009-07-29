@@ -14,7 +14,7 @@ setup(
     author_email='rich@richleland.com',
     url='https://bitbucket.org/richleland/django-cumulus/',
     download_url='https://bitbucket.org/richleland/django-cumulus/downloads/',
-    packages=['cumulus', 'cumulus.templates'],
+    packages=['cumulus'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
