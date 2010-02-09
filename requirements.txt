@@ -1,2 +1,2 @@
-python-cloudfiles==1.7.0
 Django==1.1.1
+-e git+git://github.com/rackspace/python-cloudfiles.git@1.7.0#egg=python-cloudfiles
