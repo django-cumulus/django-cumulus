@@ -7,3 +7,4 @@ syntax: glob
 MANIFEST
 dist/
 *.egg-info
+cumulus_project/
