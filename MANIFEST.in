@@ -3,4 +3,3 @@ include CHANGELOG
 include LICENSE
 include README
 include requirements.txt
-recursive-include cumulus/templates/ *

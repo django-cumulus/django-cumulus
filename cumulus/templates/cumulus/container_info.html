@@ -1,5 +1,0 @@
-<h2>Edit properties for {{ container }}</h2>
-<form id="container-form" action="{% url admin:cumulus-container-info account.id container_name %}" method="post" accept-charset="utf-8">
-    {{ form.as_p }}
-</form>
-{% if is_public %}Container URL: {{ public_uri }}{% endif %}
