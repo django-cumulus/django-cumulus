@@ -12,10 +12,10 @@ except ImportError:
                                "http://www.mosso.com/cloudfiles.jsp.")
 
 # TODO: implement TTL into cloudfiles methods
-CLOUDFILES_TTL = getattr(settings, 'CLOUDFILES_TTL', 600)
+CUMULUS_TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
 
-def cloudfiles_upload_to(self, filename):
+def CUMULUS_upload_to(self, filename):
     """
     Simple, custom upload_to because Cloud Files doesn't support
     nested containers (directories).
@@ -40,9 +40,9 @@ class CloudFilesStorage(Storage):
         """
         Initialize the settings for the connection and container.
         """
-        self.username = username or settings.CLOUDFILES_USERNAME
-        self.api_key = api_key or settings.CLOUDFILES_API_KEY
-        self.container_name = container or settings.CLOUDFILES_CONTAINER
+        self.username = username or settings.CUMULUS_USERNAME
+        self.api_key = api_key or settings.CUMULUS_API_KEY
+        self.container_name = container or settings.CUMULUS_CONTAINER
         self.connection_kwargs = connection_kwargs or {}
 
     def __getstate__(self):
