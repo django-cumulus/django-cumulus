@@ -15,7 +15,7 @@ except ImportError:
 CUMULUS_TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
 
-def CUMULUS_upload_to(self, filename):
+def cumulus_upload_to(self, filename):
     """
     Simple, custom upload_to because Cloud Files doesn't support
     nested containers (directories).
