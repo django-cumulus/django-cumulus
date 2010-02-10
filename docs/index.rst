@@ -65,6 +65,15 @@ You can install these dependencies yourself, or use the requirements file includ
 
     pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.2/requirements.txt
 
+Tests
+*****
+
+To run the tests, add ``cumulus`` to your ``INSTALLED_APPS`` and run::
+
+    django-admin.py test cumulus
+
+This will upload two very small files to your container and delete them when the tests have finished running.
+
 Issues
 ******
 
