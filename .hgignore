@@ -6,6 +6,9 @@ syntax: glob
 *.db
 MANIFEST
 dist/
+*.egg
 *.egg-info
+*.gz
 cumulus_project/
 _build/
+build/
