@@ -8,3 +8,4 @@ MANIFEST
 dist/
 *.egg-info
 cumulus_project/
+_build/
