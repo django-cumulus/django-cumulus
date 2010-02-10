@@ -1,5 +1,5 @@
-include AUTHORS
-include CHANGELOG
-include LICENSE
-include README
+include AUTHORS.txt
+include CHANGELOG.rst
+include LICENSE.txt
+include README.rst
 include requirements.txt
