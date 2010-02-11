@@ -2,7 +2,7 @@ import os, distribute_setup
 distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 
-f = open(os.path.join(os.path.dirname(__file__), 'docs/index.rst'))
+f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
 long_description = f.read().strip()
 f.close()
 
