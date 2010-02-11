@@ -1,5 +1,5 @@
-django-cumulus changelog
-========================
+changelog
+=========
 
 Version 0.2, 10 February 2010
 *****************************

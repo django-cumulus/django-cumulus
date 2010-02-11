@@ -3,6 +3,12 @@ django-cumulus
 
 The aim of django-cumulus is to provide a set of tools to utilize Rackspace Cloud Files through Django. It currently includes a custom file storage class, CloudFilesStorage.
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   
+   changelog
+
 Installation
 ************
     
@@ -85,4 +91,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
