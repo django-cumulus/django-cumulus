@@ -13,6 +13,7 @@ setup(
     
     author = "Rich Leland",
     author_email = "rich@richleland.com",
+    license = 'BSD',
     description = "An interface to Rackspace Cloud Files through Django.",
     long_description = long_description,
     url = "http://bitbucket.org/richleland/django-cumulus/",

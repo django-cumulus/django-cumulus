@@ -1,5 +1,4 @@
-include AUTHORS.txt
-include CHANGELOG.rst
 include LICENSE.txt
 include README.txt
 include requirements.txt
+recursive-include docs *
