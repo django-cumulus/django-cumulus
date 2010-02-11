@@ -2,3 +2,4 @@ include LICENSE.txt
 include README.txt
 include requirements.txt
 recursive-include docs *
+recursive-exclude cumulus_project *

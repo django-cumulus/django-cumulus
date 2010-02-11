@@ -9,9 +9,10 @@ The aim of django-cumulus is to provide a set of tools to utilize Rackspace Clou
    
    changelog
 
+.. comment: split here
 Installation
 ************
-    
+
 To install the latest release (currently 0.2) from PyPI using pip::
 
     pip install django-cumulus
@@ -84,10 +85,3 @@ Issues
 ******
 
 To report issues, please use the issue tracker at http://bitbucket.org/richleland/django-cumulus/issues/.
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
