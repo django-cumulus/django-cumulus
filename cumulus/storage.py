@@ -1,3 +1,4 @@
+import mimetypes
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files import File
@@ -110,11 +111,17 @@ class CloudFilesStorage(Storage):
         """
         content.open()
         cloud_obj = self.container.create_object(name)
-        cloud_obj.size = content.file.size
+        if hasattr(content.file, 'size'):
+            cloud_obj.size = content.file.size
+        else:
+            cloud_obj.size = content.size
         # If the content type is available, pass it in directly rather than
         # getting the cloud object to try to guess.
         if hasattr(content.file, 'content_type'):
             cloud_obj.content_type = content.file.content_type
+        else:
+            mime_type, encoding = mimetypes.guess_type(name)
+            cloud_obj.content_type = mime_type
         cloud_obj.send(content)
         content.close()
         return name
