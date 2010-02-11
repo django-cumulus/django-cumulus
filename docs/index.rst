@@ -10,10 +10,11 @@ The aim of django-cumulus is to provide a set of tools to utilize Rackspace Clou
    changelog
 
 .. comment: split here
+
 Installation
 ************
 
-To install the latest release (currently 0.2) from PyPI using pip::
+To install the latest release (currently 0.2.1) from PyPI using pip::
 
     pip install django-cumulus
 
@@ -23,8 +24,8 @@ To install the development version using pip::
 
 Or you can download the tarball and install::
 
-    wget http://bitbucket.org/richleland/django-cumulus/get/0.2.tar.gz
-    tar -xzvf django-cumulus-0.2.tar.gz
+    wget http://bitbucket.org/richleland/django-cumulus/get/0.2.1.tar.gz
+    tar -xzvf django-cumulus-0.2.1.tar.gz
     cd django-cumulus
     python setup.py install
 
@@ -70,7 +71,7 @@ Requirements
 
 You can install these dependencies yourself, or use the requirements file included in the package::
 
-    pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.2/requirements.txt
+    pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.2.1/requirements.txt
 
 Tests
 *****
