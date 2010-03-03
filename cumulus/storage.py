@@ -203,6 +203,7 @@ class CloudFilesStorageFile(File):
 
     def __init__(self, storage, name, *args, **kwargs):
         self._storage = storage
+        self._pos = 0
         super(CloudFilesStorageFile, self).__init__(file=None, name=name,
                                                     *args, **kwargs)
 
