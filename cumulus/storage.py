@@ -7,7 +7,7 @@ from django.utils.text import get_valid_filename
 
 try:
     import cloudfiles
-    from cloudfiles.errors import NoSuchObject
+    from cloudfiles.errors import NoSuchObject, ResponseError
 except ImportError:
     raise ImproperlyConfigured("Could not load cloudfiles dependency. See "
                                "http://www.mosso.com/cloudfiles.jsp.")
@@ -130,7 +130,13 @@ class CloudFilesStorage(Storage):
         """
         Deletes the specified file from the storage system.
         """
-        self.container.delete_object(name)
+        try:
+            self.container.delete_object(name)
+        except ResponseError as exc:
+            if exc.status == 404: 
+                pass
+            else:
+                raise
 
     def exists(self, name):
         """
