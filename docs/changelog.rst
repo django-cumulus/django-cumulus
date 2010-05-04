@@ -1,6 +1,12 @@
 changelog
 =========
 
+Version 0.2.3, 03 May 2010
+**************************
+
+* Fix bug when accessing imagekit attributes
+* Fix setup.py distribute installation issue
+
 Version 0.2.2, 11 February 2010
 *******************************
 
