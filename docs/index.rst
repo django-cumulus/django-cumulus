@@ -14,7 +14,7 @@ The aim of django-cumulus is to provide a set of tools to utilize Rackspace Clou
 Installation
 ************
 
-To install the latest release (currently 0.2.3) from PyPI using pip::
+To install the latest release (currently 0.3) from PyPI using pip::
 
     pip install django-cumulus
 
@@ -24,10 +24,18 @@ To install the development version using pip::
 
 Or you can download the tarball and install::
 
-    wget http://bitbucket.org/richleland/django-cumulus/get/0.2.3.tar.gz
-    tar -xzvf django-cumulus-0.2.3.tar.gz
+    wget http://bitbucket.org/richleland/django-cumulus/get/0.3.tar.gz
+    tar -xzvf django-cumulus-0.3.tar.gz
     cd django-cumulus
     python setup.py install
+
+Add ``cumulus`` to ``INSTALLED_APPS``::
+
+    INSTALLED_APPS = (
+        ...
+        'cumulus',
+        ...
+    )
 
 Usage
 *****
@@ -63,6 +71,34 @@ Or through Django's default ImageField or FileField api::
     >>> photo.image.url
     http://c0000000.cdn.cloudfiles.rackspacecloud.com/photos/some-image.jpg
 
+Management command
+******************
+
+django-cumulus ships with a management command for synchronizing a local static media folder with a remote container. A few extra settings are required to make use of the command.
+
+Add the following required settings::
+
+     # the name of the container to sync with
+    CUMULUS_STATIC_CONTAINER = 'MyStaticContainer'
+    
+    # whether to use rackspace's internal private network
+    CUMULUS_USE_SERVICENET = False
+    
+    # a list of files to exclude from sync
+    CUMULUS_FILTER_LIST = []
+
+Invoke the management command::
+
+    ./manage.py syncstatic
+
+You can also perform a test run::
+
+    ./manage.py syncstatic -t
+
+For a full list of available options::
+
+    ./manage.py help syncstatic
+
 Requirements
 ************
 
@@ -71,7 +107,7 @@ Requirements
 
 You can install these dependencies yourself, or use the requirements file included in the package::
 
-    pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.2.3/requirements.txt
+    pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.3/requirements.txt
 
 Tests
 *****

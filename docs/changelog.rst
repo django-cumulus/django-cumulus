@@ -1,6 +1,11 @@
 changelog
 =========
 
+Version 0.3, 17 May 2010
+**************************
+
+* Added syncstatic management command
+
 Version 0.2.3, 03 May 2010
 **************************
 
