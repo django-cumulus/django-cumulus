@@ -1,6 +1,12 @@
 changelog
 =========
 
+Version 0.3, 18 May 2010
+**************************
+
+* Fixed syncstatic deletion bug
+* Require verbosity > 1 for syncstatic output
+
 Version 0.3, 17 May 2010
 **************************
 
