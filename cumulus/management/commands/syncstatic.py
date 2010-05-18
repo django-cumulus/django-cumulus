@@ -112,14 +112,14 @@ class Command(BaseCommand):
                                                os.stat(file_path).st_mtime)
             if cloud_datetime and local_datetime < cloud_datetime:
                 self.skip_count += 1
-                if self.verbosity > 0:
+                if self.verbosity > 1:
                     print "Skipped %s: not modified." % object_name
                 continue
             
             if not self.test_run:
                 cloud_obj.load_from_filename(file_path)
             self.upload_count += 1
-            if self.verbosity > 0:
+            if self.verbosity > 1:
                 print "Uploaded", cloud_obj.name
     
     def delete_files(self):
@@ -127,7 +127,7 @@ class Command(BaseCommand):
         for cloud_name in self.container.list_objects():
             if cloud_name not in self.local_object_names:
                 self.delete_count += 1
-                if self.verbosity > 0:
-                    print "Deleted" % cloud_name
+                if self.verbosity > 1:
+                    print "Deleted %s" % cloud_name
                 if not self.test_run:
                     self.container.delete_object(cloud_name)
