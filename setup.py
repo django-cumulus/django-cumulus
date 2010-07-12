@@ -8,7 +8,7 @@ long_description = open(index_filename).read().split('split here', 1)[1]
 
 setup(
     name = "django-cumulus",
-    version = "0.3.1",
+    version = "0.3.2",
     packages = find_packages(),
     
     author = "Rich Leland",
@@ -17,7 +17,7 @@ setup(
     description = "An interface to Rackspace Cloud Files through Django.",
     long_description = long_description,
     url = "http://bitbucket.org/richleland/django-cumulus/",
-    download_url = "http://bitbucket.org/richleland/django-cumulus/get/0.3.1.tar.gz",
+    download_url = "http://bitbucket.org/richleland/django-cumulus/get/0.3.2.tar.gz",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
