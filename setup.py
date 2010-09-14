@@ -8,7 +8,7 @@ long_description = open(index_filename).read().split('split here', 1)[1]
 
 setup(
     name = "django-cumulus",
-    version = "0.3.3",
+    version = "0.3.4",
     packages = find_packages(),
     
     author = "Rich Leland",

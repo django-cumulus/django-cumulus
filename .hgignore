@@ -9,6 +9,6 @@ dist/
 *.egg
 *.egg-info
 *.gz
-cumulus_project/
+local_settings.py
 _build/
 build/

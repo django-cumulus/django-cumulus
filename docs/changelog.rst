@@ -1,7 +1,23 @@
 changelog
 =========
 
-Version 0.3, 18 May 2010
+Version 0.3.4, 13 September 2010
+********************************
+
+* Reverted exception handling to pre-2.6 style
+* Added example project to repo
+
+Version 0.3.3, 12 July 2010
+***************************
+
+* Removed reliance on bitbucket tag download files
+
+Version 0.3.2, 12 July 2010
+***************************
+
+* Pulled in Ian Schenck's delete_object fix
+
+Version 0.3.1, 18 May 2010
 **************************
 
 * Fixed syncstatic deletion bug
