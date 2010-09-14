@@ -132,8 +132,8 @@ class CloudFilesStorage(Storage):
         """
         try:
             self.container.delete_object(name)
-        except ResponseError as exc:
-            if exc.status == 404: 
+        except ResponseError, exc:
+            if exc.status == 404:
                 pass
             else:
                 raise
