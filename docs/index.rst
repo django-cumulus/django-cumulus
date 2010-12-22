@@ -20,14 +20,7 @@ To install the latest release (currently 0.3.4) from PyPI using pip::
 
 To install the development version using pip::
 
-    pip install -e hg+http://bitbucket.org/richleland/django-cumulus/#egg=django-cumulus
-
-Or you can download the tarball and install::
-
-    wget http://bitbucket.org/richleland/django-cumulus/get/0.3.4.tar.gz
-    tar -xzvf django-cumulus-0.3.4.tar.gz
-    cd django-cumulus
-    python setup.py install
+    pip install -e git://github.com/richleland/django-cumulus.git#egg=django-cumulus
 
 Add ``cumulus`` to ``INSTALLED_APPS``::
 
@@ -102,12 +95,12 @@ For a full list of available options::
 Requirements
 ************
 
-* Django >= 1.1.1
+* Django >= 1.1.2
 * python-cloudfiles >= 1.7.0
 
 You can install these dependencies yourself, or use the requirements file included in the package::
 
-    pip install -r http://bitbucket.org/richleland/django-cumulus/raw/0.3.4/requirements.txt
+    pip install -r https://github.com/richleland/django-cumulus/raw/0.3.4/requirements.txt
 
 Tests
 *****
@@ -121,4 +114,4 @@ This will upload two very small files to your container and delete them when the
 Issues
 ******
 
-To report issues, please use the issue tracker at http://bitbucket.org/richleland/django-cumulus/issues/.
+To report issues, please use the issue tracker at https://github.com/richleland/django-cumulus/issues.
