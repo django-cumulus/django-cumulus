@@ -1,11 +1,12 @@
-*.py[co]
-*.log
 *.db
-MANIFEST
-dist/
 *.egg
 *.egg-info
 *.gz
-local_settings.py
+*.log
+*.py[co]
+.tox
+MANIFEST
 _build/
 build/
+dist/
+local_settings.py
