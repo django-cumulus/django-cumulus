@@ -44,7 +44,9 @@ class CloudFilesStorage(Storage):
         self.username = username or settings.CUMULUS_USERNAME
         self.api_key = api_key or settings.CUMULUS_API_KEY
         self.container_name = container or settings.CUMULUS_CONTAINER
+        self.use_servicenet = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
         self.connection_kwargs = connection_kwargs or {}
+
 
     def __getstate__(self):
         """
@@ -53,12 +55,14 @@ class CloudFilesStorage(Storage):
         return dict(username=self.username,
                     api_key=self.api_key,
                     container_name=self.container_name,
+                    use_servicenet=self.use_servicenet,
                     connection_kwargs=self.connection_kwargs)
 
     def _get_connection(self):
         if not hasattr(self, '_connection'):
             self._connection = cloudfiles.get_connection(self.username,
-                                    self.api_key, **self.connection_kwargs)
+                                    self.api_key, self.use_servicenet,
+                                    **self.connection_kwargs)
         return self._connection
 
     def _set_connection(self, value):
