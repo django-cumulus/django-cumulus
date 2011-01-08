@@ -8,17 +8,17 @@ long_description = open(index_filename).read().split('split here', 1)[1]
 
 setup(
     name = "django-cumulus",
-    version = "0.3.4",
+    version = "0.3.5",
     packages = find_packages(),
-    
+
     author = "Rich Leland",
     author_email = "rich@richleland.com",
     license = 'BSD',
     description = "An interface to Rackspace Cloud Files through Django.",
     long_description = long_description,
-    url = "http://bitbucket.org/richleland/django-cumulus/",
+    url = "https://github.com/richleland/django-cumulus/",
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',

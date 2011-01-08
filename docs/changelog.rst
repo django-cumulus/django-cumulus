@@ -1,6 +1,13 @@
 changelog
 =========
 
+Version 0.3.5, 07 January 2011
+******************************
+
+* Fixed glaring issue affecting Django > 1.1.x (see http://bit.ly/e8YhcR)
+* Removed reliance on physical files for tests
+* Added tox config to test multiple versions of Python and Django
+
 Version 0.3.4, 13 September 2010
 ********************************
 
