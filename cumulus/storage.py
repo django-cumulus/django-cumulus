@@ -213,6 +213,9 @@ class CloudFilesStorageFile(File):
         super(CloudFilesStorageFile, self).__init__(file=None, name=name,
                                                     *args, **kwargs)
 
+    def _get_pos(self):
+        return self._pos
+
     def _get_size(self):
         if not hasattr(self, '_size'):
             self._size = self._storage.size(self.name)
@@ -226,6 +229,7 @@ class CloudFilesStorageFile(File):
     def _get_file(self):
         if not hasattr(self, '_file'):
             self._file = self._storage._get_cloud_obj(self.name)
+            self._file.tell = self._get_pos
         return self._file
 
     def _set_file(self, value):
@@ -246,7 +250,6 @@ class CloudFilesStorageFile(File):
         """
         Open the cloud file object.
         """
-        self.file
         self._pos = 0
 
     def close(self, *args, **kwargs):
