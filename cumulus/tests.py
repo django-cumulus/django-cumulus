@@ -25,11 +25,11 @@ class CumulusTests(TestCase):
         self.assertEqual(self.thing.image.width, 1)
         self.assertEqual(self.thing.image.height, 1)
         self.assertEqual(self.thing.image.size, 695)
-        self.assertTrue("cdn.cloudfiles.rackspacecloud.com" in self.thing.image.url,
+        self.assertTrue("cloudfiles.rackspacecloud.com" in self.thing.image.url,
                      "URL is not a valid Cloud Files CDN URL.")
 
         self.assertEqual(self.thing.document.size, 12)
-        self.assertTrue("cdn.cloudfiles.rackspacecloud.com" in self.thing.document.url,
+        self.assertTrue("cloudfiles.rackspacecloud.com" in self.thing.document.url,
                      "URL is not a valid Cloud Files CDN URL.")
 
     def test_image_content_type(self):
