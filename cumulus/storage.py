@@ -119,6 +119,8 @@ class CloudFilesStorage(Storage):
         # getting the cloud object to try to guess.
         if hasattr(content.file, 'content_type'):
             cloud_obj.content_type = content.file.content_type
+        elif hasattr(content, 'content_type'):
+            cloud_obj.content = content.content_type
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             cloud_obj.content_type = mime_type
