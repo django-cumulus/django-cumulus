@@ -60,9 +60,11 @@ class CloudFilesStorage(Storage):
 
     def _get_connection(self):
         if not hasattr(self, '_connection'):
-            self._connection = cloudfiles.get_connection(self.username,
-                                    self.api_key, self.use_servicenet,
-                                    **self.connection_kwargs)
+            self._connection = cloudfiles.get_connection(
+                                  username=self.username,
+                                  api_key=self.api_key,
+                                  servicenet=self.use_servicenet,
+                                  **self.connection_kwargs)
         return self._connection
 
     def _set_connection(self, value):
