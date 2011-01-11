@@ -1,10 +1,12 @@
-import cloudfiles, optparse
+import cloudfiles
+import optparse
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
+    args = "[container_name container_name ...]"
     help = "Display info for cloud files containers"
 
     option_list = BaseCommand.option_list + (
@@ -17,30 +19,32 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         USERNAME = getattr(settings, 'CUMULUS_USERNAME')
         API_KEY = getattr(settings, 'CUMULUS_API_KEY')
-        
+
         conn = cloudfiles.get_connection(USERNAME, API_KEY)
         if args:
-            try:
-                container = conn.get_container(args[0])
-            except cloudfiles.errors.NoSuchContainer:
-                raise CommandError("Container does not exist: %s" % args[0])
-            containers = [container]
+            containers = []
+            for container_name in args:
+                try:
+                    container = conn.get_container(container_name)
+                except cloudfiles.errors.NoSuchContainer:
+                    raise CommandError("Container does not exist: %s" % container_name)
+                containers.append(container)
         else:
             containers = conn.get_all_containers()
-        
+
         opts = ['name', 'count', 'size', 'uri']
-        
+
         for container in containers:
             info = {
                 'name': container.name,
                 'count': container.object_count,
                 'size': container.size_used,
-                'uri': container.public_uri(),
+                'uri': container.public_uri() if container.is_public() else "NOT PUBLIC",
             }
             output = [str(info[o]) for o in opts if options.get(o)]
             if not output:
                 output = [str(info[o]) for o in opts]
             print ', '.join(output)
-        
+
         if not containers:
             print 'No containers found.'
