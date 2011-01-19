@@ -1,6 +1,16 @@
 changelog
 =========
 
+Version 0.3.6, 19 January 2011
+******************************
+
+* Added containerinfo management command
+* Properly integrated ``CUMULUS_USE_SERVICENET`` into storage backend
+* Resolved `issue 5`_, adding ``CUMULUS_TIMEOUT`` setting to specify default connection timeout
+* Restructured tests to work properly with django-nose
+
+.. _issue 5: https://github.com/richleland/django-cumulus/issues/issue/5
+
 Version 0.3.5, 07 January 2011
 ******************************
 
