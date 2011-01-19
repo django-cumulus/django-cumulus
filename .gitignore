@@ -4,9 +4,11 @@
 *.gz
 *.log
 *.py[co]
+.coverage
 .tox
 MANIFEST
 _build/
 build/
+coverage/
 dist/
 local_settings.py
