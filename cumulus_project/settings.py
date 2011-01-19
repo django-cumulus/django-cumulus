@@ -81,7 +81,6 @@ INSTALLED_APPS = (
     'cumulus',
     'cumulus.tests',
     'django_extensions',
-    'django_nose',
     'imagekit',
     'sorl.thumbnail',
 
@@ -96,12 +95,6 @@ CUMULUS_API_KEY = 'YOUR_API_KEY'
 CUMULUS_CONTAINER = 'YOUR_CONTAINER_NAME'
 CUMULUS_TTL = 600
 DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
-
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-package=cumulus',
-]
 
 try:
     from local_settings import *
