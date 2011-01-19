@@ -16,6 +16,7 @@ except ImportError:
 USERNAME = getattr(settings, 'CUMULUS_USERNAME')
 API_KEY = getattr(settings, 'CUMULUS_API_KEY')
 CONTAINER = getattr(settings, 'CUMULUS_CONTAINER')
+TIMEOUT = getattr(settings, 'CUMULUS_TIMEOUT', 5)
 USE_SERVICENET = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
 # TODO: implement TTL into cloudfiles methods
 TTL = getattr(settings, 'CUMULUS_TTL', 600)
@@ -41,7 +42,7 @@ class CloudFilesStorage(Storage):
     """
     default_quick_listdir = True
 
-    def __init__(self, username=None, api_key=None, container=None,
+    def __init__(self, username=None, api_key=None, container=None, timeout=None,
                  connection_kwargs=None):
         """
         Initialize the settings for the connection and container.
@@ -49,6 +50,7 @@ class CloudFilesStorage(Storage):
         self.username = username or USERNAME
         self.api_key = api_key or API_KEY
         self.container_name = container or CONTAINER
+        self.timeout = timeout or TIMEOUT
         self.use_servicenet = USE_SERVICENET
         self.connection_kwargs = connection_kwargs or {}
 
@@ -60,6 +62,7 @@ class CloudFilesStorage(Storage):
         return dict(username=self.username,
                     api_key=self.api_key,
                     container_name=self.container_name,
+                    timeout=self.timeout,
                     use_servicenet=self.use_servicenet,
                     connection_kwargs=self.connection_kwargs)
 
@@ -68,6 +71,7 @@ class CloudFilesStorage(Storage):
             self._connection = cloudfiles.get_connection(
                                   username=self.username,
                                   api_key=self.api_key,
+                                  timeout=self.timeout,
                                   servicenet=self.use_servicenet,
                                   **self.connection_kwargs)
         return self._connection
