@@ -1,4 +1,5 @@
 import mimetypes
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files import File
@@ -12,8 +13,12 @@ except ImportError:
     raise ImproperlyConfigured("Could not load cloudfiles dependency. See "
                                "http://www.mosso.com/cloudfiles.jsp.")
 
+USERNAME = getattr(settings, 'CUMULUS_USERNAME')
+API_KEY = getattr(settings, 'CUMULUS_API_KEY')
+CONTAINER = getattr(settings, 'CUMULUS_CONTAINER')
+USE_SERVICENET = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
 # TODO: implement TTL into cloudfiles methods
-CUMULUS_TTL = getattr(settings, 'CUMULUS_TTL', 600)
+TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
 
 def cumulus_upload_to(self, filename):
@@ -41,10 +46,10 @@ class CloudFilesStorage(Storage):
         """
         Initialize the settings for the connection and container.
         """
-        self.username = username or settings.CUMULUS_USERNAME
-        self.api_key = api_key or settings.CUMULUS_API_KEY
-        self.container_name = container or settings.CUMULUS_CONTAINER
-        self.use_servicenet = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
+        self.username = username or USERNAME
+        self.api_key = api_key or API_KEY
+        self.container_name = container or CONTAINER
+        self.use_servicenet = USE_SERVICENET
         self.connection_kwargs = connection_kwargs or {}
 
 
