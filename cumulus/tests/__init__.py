@@ -1,16 +1,10 @@
 from django.test import TestCase
-from django.db import models
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from cumulus.storage import CloudFilesStorage
+from cumulus.tests.models import Thing
+
 cloudfiles_storage = CloudFilesStorage()
-
-class Thing(models.Model):
-    "A dummy model to use for tests."
-    image = models.ImageField(storage=cloudfiles_storage, upload_to='cumulus-tests')
-    document = models.FileField(storage=cloudfiles_storage, upload_to='cumulus-tests')
-    custom = models.FileField(storage=cloudfiles_storage, upload_to='cumulus-tests')
-
 
 class CumulusTests(TestCase):
     def setUp(self):
