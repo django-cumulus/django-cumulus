@@ -22,20 +22,6 @@ USE_SERVICENET = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
 TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
 
-def cumulus_upload_to(self, filename):
-    """
-    Simple, custom upload_to because Cloud Files doesn't support
-    nested containers (directories).
-
-    Actually found this out from @minter:
-    @richleland The Cloud Files APIs do support pseudo-subdirectories, by
-    creating zero-byte files with type application/directory.
-
-    May implement in a future version.
-    """
-    return get_valid_filename(filename)
-
-
 class CloudFilesStorage(Storage):
     """
     Custom storage for Mosso Cloud Files.
