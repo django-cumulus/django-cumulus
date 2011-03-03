@@ -8,8 +8,9 @@ long_description = open(index_filename).read().split('split here', 1)[1]
 
 setup(
     name = "django-cumulus",
-    version = "0.3.6",
+    version = "1.0",
     packages = find_packages(),
+    install_requires = ['python-cloudfiles>=1.7.8'],
 
     author = "Rich Leland",
     author_email = "rich@richleland.com",

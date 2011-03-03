@@ -1,6 +1,13 @@
 changelog
 =========
 
+Version 1.0, 03 March 2011
+******************************
+
+* OK, srsly. Time for 1.0.
+* Fixed content_type bug
+* Bumped python-cloudfiles requirement to 1.7.8
+
 Version 0.3.6, 19 January 2011
 ******************************
 
