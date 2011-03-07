@@ -11,7 +11,7 @@ long_description = open(index_filename).read().split('split here', 1)[1]
 
 setup(
     name = "django-cumulus",
-    version = "1.0",
+    version = __import__('cumulus').get_version().replace(' ', '-'),
     packages = find_packages(),
     install_requires = ['python-cloudfiles>=1.7.8'],
 

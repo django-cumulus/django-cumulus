@@ -2,7 +2,7 @@ changelog
 =========
 
 Version 1.0, 03 March 2011
-******************************
+**************************
 
 * OK, srsly. Time for 1.0.
 * Fixed content_type bug
