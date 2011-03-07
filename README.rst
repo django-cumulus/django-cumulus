@@ -6,4 +6,4 @@ The aim of django-cumulus is to provide a set of tools to utilize Rackspace Clou
 Documentation
 *************
 
-For full documentation, go to http://packages.python.org/django-cumulus/.
+For full documentation, go to http://django-cumulus.rtfd.org/.
