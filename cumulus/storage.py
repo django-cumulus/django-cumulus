@@ -18,6 +18,7 @@ API_KEY = getattr(settings, 'CUMULUS_API_KEY')
 CONTAINER = getattr(settings, 'CUMULUS_CONTAINER')
 TIMEOUT = getattr(settings, 'CUMULUS_TIMEOUT', 5)
 USE_SERVICENET = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
+CNAMES = getattr(settings, 'CUMULUS_CNAMES', None)
 # TODO: implement TTL into cloudfiles methods
 TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
@@ -89,6 +90,8 @@ class CloudFilesStorage(Storage):
     def _get_container_url(self):
         if not hasattr(self, '_container_public_uri'):
             self._container_public_uri = self.container.public_uri()
+        if CNAMES and self._container_public_uri in CNAMES:
+            self._container_public_uri = CNAMES[self._container_public_uri]
         return self._container_public_uri
 
     container_url = property(_get_container_url)
