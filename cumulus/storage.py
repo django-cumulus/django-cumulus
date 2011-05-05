@@ -1,17 +1,10 @@
+import cloudfiles
 import mimetypes
+from cloudfiles.errors import NoSuchObject, ResponseError
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.core.files import File
 from django.core.files.storage import Storage
-from django.utils.text import get_valid_filename
-
-try:
-    import cloudfiles
-    from cloudfiles.errors import NoSuchObject, ResponseError
-except ImportError:
-    raise ImproperlyConfigured("Could not load cloudfiles dependency. See "
-                               "http://www.mosso.com/cloudfiles.jsp.")
 
 USERNAME = getattr(settings, 'CUMULUS_USERNAME')
 API_KEY = getattr(settings, 'CUMULUS_API_KEY')
@@ -25,7 +18,7 @@ TTL = getattr(settings, 'CUMULUS_TTL', 600)
 
 class CloudFilesStorage(Storage):
     """
-    Custom storage for Mosso Cloud Files.
+    Custom storage for Rackspace Cloud Files.
     """
     default_quick_listdir = True
 
@@ -76,8 +69,7 @@ class CloudFilesStorage(Storage):
 
     def _set_container(self, container):
         """
-        Set the container, making it publicly available (on Limelight CDN) if
-        it is not already.
+        Set the container, making it publicly available if it is not already.
         """
         if not container.is_public():
             container.make_public()
