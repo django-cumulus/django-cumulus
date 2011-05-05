@@ -1,6 +1,11 @@
 changelog
 =========
 
+Version 1.0.2, 05 May 2011
+**************************
+
+* Added ``CUMULUS_CNAMES`` setting to map cloudfiles URIs to CNAMEs
+
 Version 1.0, 03 March 2011
 **************************
 
