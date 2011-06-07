@@ -92,6 +92,26 @@ For a full list of available options::
 
     ./manage.py help syncstatic
 
+Context Processor
+*****************
+
+django-cumulus includes an optional context_processor for accessing the full CDN_URL of any container files from your templates.
+
+This is useful when you're using Cloud Files to serve you static media such as css and javascript and don't have access to the ``ImageField`` or ``FileField``'s url() convenience method.
+
+Add ``cumulus.context_processors.cdn_url`` to your list of context processors in your project's settings.py file::
+
+
+    TEMPLATE_CONTEXT_PROCESSORS = (
+        ...
+        'cumulus.context_processors.cdn_url',
+        ...
+    )
+
+Now in your templates you can use {{ CDN_URL }} to output the full path to local media::
+
+    <link rel="stylesheet" href="{{ CDN_URL }}css/style.css">
+
 Requirements
 ************
 
