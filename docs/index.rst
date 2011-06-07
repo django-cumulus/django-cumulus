@@ -14,7 +14,7 @@ The aim of django-cumulus is to provide a set of tools to utilize Rackspace Clou
 Installation
 ************
 
-To install the latest release (currently 1.0.2) from PyPI using pip::
+To install the latest release (currently 1.0.3) from PyPI using pip::
 
     pip install django-cumulus
 

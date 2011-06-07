@@ -1,6 +1,11 @@
 changelog
 =========
 
+Version 1.0.3, 05 May 2011
+**************************
+
+* Added context processor for using container URLs in templates for statically synced media
+
 Version 1.0.2, 05 May 2011
 **************************
 
