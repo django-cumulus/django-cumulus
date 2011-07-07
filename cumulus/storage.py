@@ -2,18 +2,10 @@ import cloudfiles
 import mimetypes
 from cloudfiles.errors import NoSuchObject, ResponseError
 
-from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import Storage
 
-USERNAME = getattr(settings, 'CUMULUS_USERNAME')
-API_KEY = getattr(settings, 'CUMULUS_API_KEY')
-CONTAINER = getattr(settings, 'CUMULUS_CONTAINER')
-TIMEOUT = getattr(settings, 'CUMULUS_TIMEOUT', 5)
-USE_SERVICENET = getattr(settings, 'CUMULUS_USE_SERVICENET', False)
-CNAMES = getattr(settings, 'CUMULUS_CNAMES', None)
-# TODO: implement TTL into cloudfiles methods
-TTL = getattr(settings, 'CUMULUS_TTL', 600)
+from .settings import CUMULUS
 
 
 class CloudFilesStorage(Storage):
@@ -27,12 +19,13 @@ class CloudFilesStorage(Storage):
         """
         Initialize the settings for the connection and container.
         """
-        self.username = username or USERNAME
-        self.api_key = api_key or API_KEY
-        self.container_name = container or CONTAINER
-        self.timeout = timeout or TIMEOUT
-        self.use_servicenet = USE_SERVICENET
+        self.api_key = api_key or CUMULUS['API_KEY']
+        self.auth_url = CUMULUS['AUTH_URL']
         self.connection_kwargs = connection_kwargs or {}
+        self.container_name = container or CUMULUS['CONTAINER']
+        self.timeout = timeout or CUMULUS['TIMEOUT']
+        self.use_servicenet = CUMULUS['SERVICENET']
+        self.username = username or CUMULUS['USERNAME']
 
 
     def __getstate__(self):
@@ -51,6 +44,7 @@ class CloudFilesStorage(Storage):
             self._connection = cloudfiles.get_connection(
                                   username=self.username,
                                   api_key=self.api_key,
+                                  authurl = self.auth_url,
                                   timeout=self.timeout,
                                   servicenet=self.use_servicenet,
                                   **self.connection_kwargs)
@@ -82,8 +76,8 @@ class CloudFilesStorage(Storage):
     def _get_container_url(self):
         if not hasattr(self, '_container_public_uri'):
             self._container_public_uri = self.container.public_uri()
-        if CNAMES and self._container_public_uri in CNAMES:
-            self._container_public_uri = CNAMES[self._container_public_uri]
+        if CUMULUS['CNAMES'] and self._container_public_uri in CUMULUS['CNAMES']:
+            self._container_public_uri = CUMULUS['CNAMES'][self._container_public_uri]
         return self._container_public_uri
 
     container_url = property(_get_container_url)
