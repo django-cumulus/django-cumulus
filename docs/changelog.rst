@@ -1,6 +1,11 @@
 changelog
 =========
 
+Version 1.0.4, 02 September 2011
+********************************
+
+* Added USE_SSL setting, which outputs SSL URLs. Thanks to @whafro for the nudge.
+
 Version 1.0.3, 07 June 2011
 ***************************
 
