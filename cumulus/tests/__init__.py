@@ -1,8 +1,9 @@
-from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
 
 from cumulus.storage import CloudFilesStorage
 from cumulus.tests.models import Thing
+
 
 cloudfiles_storage = CloudFilesStorage()
 
@@ -19,13 +20,15 @@ class CumulusTests(TestCase):
         self.assertEqual(self.thing.image.width, 1)
         self.assertEqual(self.thing.image.height, 1)
         self.assertEqual(self.thing.image.size, 695)
-        print self.thing.image.url
         self.assertTrue("rackcdn.com" in self.thing.image.url,
                      "URL is not a valid Cloud Files CDN URL.")
 
         self.assertEqual(self.thing.document.size, 12)
         self.assertTrue("rackcdn.com" in self.thing.document.url,
                      "URL is not a valid Cloud Files CDN URL.")
+        delattr(self.thing.document.storage, '_container_public_uri')
+        self.thing.document.storage.use_ssl = True
+        self.assertTrue(self.thing.document.url.startswith("https"))
 
     def test_image_content_type(self):
         "Ensure content type is set properly for the uploaded image."
@@ -35,7 +38,7 @@ class CumulusTests(TestCase):
     def test_text_content_type(self):
         "Ensure content type is set properly for the uploaded text."
         cloud_doc = cloudfiles_storage.container.get_object(self.thing.document.name)
-        self.assertEqual(cloud_doc.content_type, "text/plain; charset=UTF-8")
+        self.assertEqual(cloud_doc.content_type, "text/plain")
 
     def test_custom_content_type(self):
         "Ensure content type is set properly when custom content type is supplied."

@@ -26,6 +26,7 @@ class CloudFilesStorage(Storage):
         self.timeout = timeout or CUMULUS['TIMEOUT']
         self.use_servicenet = CUMULUS['SERVICENET']
         self.username = username or CUMULUS['USERNAME']
+        self.use_ssl = CUMULUS['USE_SSL']
 
 
     def __getstate__(self):
@@ -75,7 +76,10 @@ class CloudFilesStorage(Storage):
 
     def _get_container_url(self):
         if not hasattr(self, '_container_public_uri'):
-            self._container_public_uri = self.container.public_uri()
+            if self.use_ssl:
+                self._container_public_uri = self.container.public_ssl_uri()
+            else:
+                self._container_public_uri = self.container.public_uri()
         if CUMULUS['CNAMES'] and self._container_public_uri in CUMULUS['CNAMES']:
             self._container_public_uri = CUMULUS['CNAMES'][self._container_public_uri]
         return self._container_public_uri

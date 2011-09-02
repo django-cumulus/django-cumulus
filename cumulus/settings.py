@@ -11,6 +11,7 @@ CUMULUS = {
     'SERVICENET': False,
     'TIMEOUT': 5,
     'TTL': 600,
+    'USE_SSL': False,
     'USERNAME': None
 }
 
