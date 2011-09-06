@@ -18,9 +18,6 @@ CUMULUS = {
 if hasattr(settings, 'CUMULUS'):
     CUMULUS.update(settings.CUMULUS)
 
-# set auth_url to the actual URL string in the cloudfiles module
-CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
-
 # backwards compatibility for old-style cumulus settings
 if not hasattr(settings, 'CUMULUS'):
     import warnings
@@ -37,5 +34,8 @@ if not hasattr(settings, 'CUMULUS'):
         'TIMEOUT': getattr(settings, 'CUMULUS_TIMEOUT', 5),
         'TTL': getattr(settings, 'CUMULUS_TTL', 600),
         'USERNAME': getattr(settings, 'CUMULUS_USERNAME'),
+        'AUTH_URL': getattr(settings, 'CUMULUS_AUTH_URL', 'us_authurl'),
     })
 
+# set auth_url to the actual URL string in the cloudfiles module
+CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
