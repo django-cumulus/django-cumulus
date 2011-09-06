@@ -26,6 +26,7 @@ class Command(BaseCommand):
     STATIC_CONTAINER = getattr(settings, 'CUMULUS_STATIC_CONTAINER')
     USE_SERVICENET   = getattr(settings, 'CUMULUS_USE_SERVICENET', True)
     FILTER_LIST      = getattr(settings, 'CUMULUS_FILTER_LIST', [])
+    AUTH_URL         = getattr(settings, 'CUMULUS_AUTH_URL', None)
 
     # paths
     DIRECTORY        = os.path.abspath(settings.STATIC_ROOT)
@@ -36,6 +37,9 @@ class Command(BaseCommand):
 
     if STATIC_URL.startswith('/'):
         STATIC_URL = STATIC_URL[1:]
+
+    if AUTH_URL:
+        AUTH_URL = getattr(cloudfiles, AUTH_URL)
 
     local_object_names = []
     create_count = 0
@@ -53,10 +57,11 @@ class Command(BaseCommand):
         self.sync_files()
 
     def sync_files(self):
-        self.conn = cloudfiles.get_connection(self.USERNAME,
-                                              self.API_KEY,
+        self.conn = cloudfiles.get_connection(username = self.USERNAME,
+                                              api_key = self.API_KEY,
+                                              authurl = self.AUTH_URL,
                                               servicenet=self.USE_SERVICENET)
-
+                                              
         try:
             self.container = self.conn.get_container(self.STATIC_CONTAINER)
         except cloudfiles.errors.NoSuchContainer:
