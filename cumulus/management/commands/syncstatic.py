@@ -6,7 +6,7 @@ import cloudfiles
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
+from cumulus.settings import CUMULUS
 
 class Command(BaseCommand):
     help = "Synchronizes static media to cloud files."
@@ -20,13 +20,13 @@ class Command(BaseCommand):
             help="Performs a test run of the sync."),
     )
 
-    # settings
-    USERNAME         = getattr(settings, 'CUMULUS_USERNAME')
-    API_KEY          = getattr(settings, 'CUMULUS_API_KEY')
-    STATIC_CONTAINER = getattr(settings, 'CUMULUS_STATIC_CONTAINER')
-    USE_SERVICENET   = getattr(settings, 'CUMULUS_USE_SERVICENET', True)
-    FILTER_LIST      = getattr(settings, 'CUMULUS_FILTER_LIST', [])
-    AUTH_URL         = getattr(settings, 'CUMULUS_AUTH_URL', None)
+    # settings from cumulus.settings
+    USERNAME         = CUMULUS['USERNAME']
+    API_KEY          = CUMULUS['API_KEY']
+    STATIC_CONTAINER = CUMULUS['STATIC_CONTAINER']
+    USE_SERVICENET   = CUMULUS['SERVICENET']
+    FILTER_LIST      = CUMULUS['FILTER_LIST']
+    AUTH_URL         = CUMULUS['AUTH_URL']
 
     # paths
     DIRECTORY        = os.path.abspath(settings.STATIC_ROOT)

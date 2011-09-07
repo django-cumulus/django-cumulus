@@ -13,3 +13,5 @@ coverage/
 dist/
 local_settings.py
 static/
+
+.DS_Store
