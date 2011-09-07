@@ -2,7 +2,6 @@ import cloudfiles
 
 from django.conf import settings
 
-
 CUMULUS = {
     'API_KEY': None,
     'AUTH_URL': 'us_authurl',
@@ -12,7 +11,9 @@ CUMULUS = {
     'TIMEOUT': 5,
     'TTL': 600,
     'USE_SSL': False,
-    'USERNAME': None
+    'USERNAME': None,
+    'STATIC_CONTAINER': None,
+    'FILTER_LIST': []
 }
 
 if hasattr(settings, 'CUMULUS'):
@@ -38,4 +39,3 @@ if not hasattr(settings, 'CUMULUS'):
         'TTL': getattr(settings, 'CUMULUS_TTL', 600),
         'USERNAME': getattr(settings, 'CUMULUS_USERNAME'),
     })
-

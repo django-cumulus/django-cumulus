@@ -6,7 +6,7 @@ import cloudfiles
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
+from cumulus.settings import CUMULUS
 
 class Command(BaseCommand):
     help = "Synchronizes static media to cloud files."
@@ -20,12 +20,13 @@ class Command(BaseCommand):
             help="Performs a test run of the sync."),
     )
 
-    # settings
-    USERNAME         = getattr(settings, 'CUMULUS_USERNAME')
-    API_KEY          = getattr(settings, 'CUMULUS_API_KEY')
-    STATIC_CONTAINER = getattr(settings, 'CUMULUS_STATIC_CONTAINER')
-    USE_SERVICENET   = getattr(settings, 'CUMULUS_USE_SERVICENET', True)
-    FILTER_LIST      = getattr(settings, 'CUMULUS_FILTER_LIST', [])
+    # settings from cumulus.settings
+    USERNAME         = CUMULUS['USERNAME']
+    API_KEY          = CUMULUS['API_KEY']
+    STATIC_CONTAINER = CUMULUS['STATIC_CONTAINER']
+    USE_SERVICENET   = CUMULUS['SERVICENET']
+    FILTER_LIST      = CUMULUS['FILTER_LIST']
+    AUTH_URL         = CUMULUS['AUTH_URL']
 
     # paths
     DIRECTORY        = os.path.abspath(settings.STATIC_ROOT)
@@ -36,6 +37,9 @@ class Command(BaseCommand):
 
     if STATIC_URL.startswith('/'):
         STATIC_URL = STATIC_URL[1:]
+
+    if AUTH_URL:
+        AUTH_URL = getattr(cloudfiles, AUTH_URL)
 
     local_object_names = []
     create_count = 0
@@ -53,10 +57,11 @@ class Command(BaseCommand):
         self.sync_files()
 
     def sync_files(self):
-        self.conn = cloudfiles.get_connection(self.USERNAME,
-                                              self.API_KEY,
+        self.conn = cloudfiles.get_connection(username = self.USERNAME,
+                                              api_key = self.API_KEY,
+                                              authurl = self.AUTH_URL,
                                               servicenet=self.USE_SERVICENET)
-
+                                              
         try:
             self.container = self.conn.get_container(self.STATIC_CONTAINER)
         except cloudfiles.errors.NoSuchContainer:
