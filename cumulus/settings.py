@@ -16,12 +16,11 @@ CUMULUS = {
     'FILTER_LIST': []
 }
 
-# set auth_url to the actual URL string in the cloudfiles module
-CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
-
 if hasattr(settings, 'CUMULUS'):
     CUMULUS.update(settings.CUMULUS)
 
+# set auth_url to the actual URL string in the cloudfiles module
+CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
 
 # backwards compatibility for old-style cumulus settings
 if not hasattr(settings, 'CUMULUS'):
