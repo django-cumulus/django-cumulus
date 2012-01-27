@@ -1,3 +1,5 @@
+from StringIO import StringIO
+import os
 import cloudfiles
 import mimetypes
 from cloudfiles.errors import NoSuchObject, ResponseError
@@ -103,6 +105,13 @@ class CloudFilesStorage(Storage):
         Use the Cloud Files service to write ``content`` to a remote file
         (called ``name``).
         """
+        (path, last) = os.path.split(name)
+        if path:
+            try:
+                self.container.get_object(path)
+            except NoSuchObject:
+                self._save(path, CloudStorageDirectory(path))
+
         content.open()
         cloud_obj = self.container.create_object(name)
         if hasattr(content.file, 'size'):
@@ -199,6 +208,27 @@ class CloudFilesStorage(Storage):
         """
         return '%s/%s' % (self.container_url, name)
 
+class CloudStorageDirectory(File):
+    """
+    A File-like object that creates a directory at cloudfiles
+    """
+
+    def __init__(self, name):
+        super(CloudStorageDirectory, self).__init__(StringIO(), name=name)
+        self.file.content_type = 'application/directory'
+        self.size = 0
+
+    def __str__(self):
+        return 'directory'
+
+    def __nonzero__(self):
+        return True
+
+    def open(self, mode=None):
+        self.seek(0)
+
+    def close(self):
+        pass
 
 class CloudFilesStorageFile(File):
     closed = False
@@ -238,6 +268,10 @@ class CloudFilesStorageFile(File):
     file = property(_get_file, _set_file)
 
     def read(self, num_bytes=None):
+        if self._pos == self._get_size():
+            return None
+        if self._pos + num_bytes > self._get_size():
+            num_bytes = self._get_size() - self._pos
         data = self.file.read(size=num_bytes or -1, offset=self._pos)
         self._pos += len(data)
         return data
