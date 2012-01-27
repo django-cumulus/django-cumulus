@@ -38,9 +38,6 @@ class Command(BaseCommand):
     if STATIC_URL.startswith('/'):
         STATIC_URL = STATIC_URL[1:]
 
-    if AUTH_URL:
-        AUTH_URL = getattr(cloudfiles, AUTH_URL)
-
     local_object_names = []
     create_count = 0
     upload_count = 0
