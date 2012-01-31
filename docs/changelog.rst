@@ -1,6 +1,18 @@
 changelog
 =========
 
+Version 1.0.5, 30 January 2012
+******************************
+
+* Added CloudFilesStaticStorage subclass for collectstatic compatability
+* Added thread-safe CloudFilesStorage subclass
+* Added four new management commands
+* Added creation of pseudo-directories
+* Numerous bug fixes and code cleanups
+* Created new example project based on Django 1.3
+* Updated tox configuration
+* Bumped python-cloudfiles requirement to 1.7.9.3
+
 Version 1.0.4, 02 September 2011
 ********************************
 
