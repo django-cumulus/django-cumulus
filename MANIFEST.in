@@ -1,6 +1,4 @@
 include LICENSE.txt
 include README.txt
-include requirements.txt
-include distribute_setup.py
 recursive-include docs *
-recursive-exclude cumulus_project *
+recursive-exclude example *
