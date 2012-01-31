@@ -146,7 +146,7 @@ LOGGING = {
 }
 
 DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
-STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStorage'
+STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
