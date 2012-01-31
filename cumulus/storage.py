@@ -1,7 +1,8 @@
-from StringIO import StringIO
-import os
-import cloudfiles
 import mimetypes
+import os
+from StringIO import StringIO
+
+import cloudfiles
 from cloudfiles.errors import NoSuchObject, ResponseError
 
 from django.core.files import File
