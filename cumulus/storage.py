@@ -1,7 +1,8 @@
-from StringIO import StringIO
-import os
-import cloudfiles
 import mimetypes
+import os
+from StringIO import StringIO
+
+import cloudfiles
 from cloudfiles.errors import NoSuchObject, ResponseError
 
 from django.core.files import File
@@ -208,6 +209,7 @@ class CloudFilesStorage(Storage):
         """
         return '%s/%s' % (self.container_url, name)
 
+
 class CloudStorageDirectory(File):
     """
     A File-like object that creates a directory at cloudfiles
@@ -229,6 +231,23 @@ class CloudStorageDirectory(File):
 
     def close(self):
         pass
+
+
+class CloudFilesStaticStorage(CloudFilesStorage):
+    """
+    Subclasses CloudFilesStorage to automatically set the container to the one
+    specified in CUMULUS['STATIC_CONTAINER']. This provides the ability to
+    specify a separate storage backend for Django's collectstatic command.
+
+    To use, make sure CUMULUS['STATIC_CONTAINER'] is set to something other
+    than CUMULUS['CONTAINER']. Then, tell Django's staticfiles app by setting
+    STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'.
+    """
+    def __init__(self, *args, **kwargs):
+        if not 'container' in kwargs:
+            kwargs['container'] = CUMULUS['STATIC_CONTAINER']
+        super(CloudFilesStaticStorage, self).__init__(*args, **kwargs)
+
 
 class CloudFilesStorageFile(File):
     closed = False
