@@ -31,7 +31,8 @@ class Command(BaseCommand):
 
         self.connection = cloudfiles.Connection(
                 settings.CUMULUS['USERNAME'],
-                settings.CUMULUS['API_KEY'])
+                settings.CUMULUS['API_KEY'],
+                authurl=settings.CUMULUS['AUTH_URL'])
 
         if len(args) == 1:
             lister = ContainerLister(self.connection, args[0])
