@@ -7,6 +7,7 @@ import cloudfiles
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from cumulus.settings import CUMULUS
+from cumulus.storage import sync_headers
 
 class Command(BaseCommand):
     help = "Synchronizes static media to cloud files."
@@ -127,6 +128,7 @@ class Command(BaseCommand):
 
             if not self.test_run:
                 cloud_obj.load_from_filename(file_path)
+                sync_headers(cloud_obj)
             self.upload_count += 1
             if self.verbosity > 1:
                 print "Uploaded", cloud_obj.name

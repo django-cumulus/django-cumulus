@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import re
 from StringIO import StringIO
 
 import cloudfiles
@@ -9,6 +10,22 @@ from django.core.files import File
 from django.core.files.storage import Storage
 
 from .settings import CUMULUS
+
+
+HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get('HEADERS', {}))
+
+
+def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
+    if hasattr(cloud_obj, 'headers'):
+        matched_headers = {}
+        for pattern, pattern_headers in header_patterns:
+            if pattern.match(cloud_obj.name):
+                matched_headers = pattern_headers.copy()
+                break
+        matched_headers.update(headers)
+        if matched_headers != cloud_obj.headers:
+            cloud_obj.headers = matched_headers
+            cloud_obj.sync_metadata()
 
 
 class CloudFilesStorage(Storage):
@@ -132,6 +149,7 @@ class CloudFilesStorage(Storage):
             cloud_obj.content_type = mime_type
         cloud_obj.send(content)
         content.close()
+        sync_headers(cloud_obj)
         return name
 
     def delete(self, name):
