@@ -15,7 +15,8 @@ CUMULUS = {
     'USERNAME': None,
     'STATIC_CONTAINER': None,
     'FILTER_LIST': [],
-    'HEADERS': {}
+    'HEADERS': {},
+    'GZIP_CONTENT_TYPES': [],
 }
 
 if hasattr(settings, 'CUMULUS'):

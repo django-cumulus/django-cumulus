@@ -1,12 +1,13 @@
 import mimetypes
 import os
 import re
+from gzip import GzipFile
 from StringIO import StringIO
 
 import cloudfiles
 from cloudfiles.errors import NoSuchObject, ResponseError
 
-from django.core.files import File
+from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
 from .settings import CUMULUS
@@ -39,6 +40,17 @@ def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     if matched_headers != cloud_obj.headers:
         cloud_obj.headers = matched_headers
         cloud_obj.sync_metadata()
+
+
+def get_gzipped_contents(input_file):
+    """
+    Return a gzipped version of a previously opened file's buffer.
+    """
+    zbuf = StringIO()
+    zfile = GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+    zfile.write(input_file.read())
+    zfile.close()
+    return ContentFile(zbuf.getvalue())
 
 
 class CloudFilesStorage(Storage):
@@ -147,10 +159,6 @@ class CloudFilesStorage(Storage):
 
         content.open()
         cloud_obj = self.container.create_object(name)
-        if hasattr(content.file, 'size'):
-            cloud_obj.size = content.file.size
-        else:
-            cloud_obj.size = content.size
         # If the content type is available, pass it in directly rather than
         # getting the cloud object to try to guess.
         if hasattr(content.file, 'content_type'):
@@ -160,6 +168,20 @@ class CloudFilesStorage(Storage):
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             cloud_obj.content_type = mime_type
+        # gzip the file if its of the right content type
+        if cloud_obj.content_type in CUMULUS.get('GZIP_CONTENT_TYPES', []):
+            if hasattr(cloud_obj, 'headers'):
+                content = get_gzipped_contents(content)
+                cloud_obj.headers['Content-Encoding'] = 'gzip'
+            else:
+                print('Warning: will not compress any files due to missing'
+                      ' custom header support. Please use latest version of'
+                      ' python-cloudfiles.')
+        # set file size
+        if hasattr(content.file, 'size'):
+            cloud_obj.size = content.file.size
+        else:
+            cloud_obj.size = content.size
         cloud_obj.send(content)
         content.close()
         sync_headers(cloud_obj)
