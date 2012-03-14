@@ -188,7 +188,7 @@ Below are the default settings::
         'CONTAINER': None,
         'SERVICENET': False,
         'TIMEOUT': 5,
-        'TTL': 600,
+        'TTL': 86400,
         'USE_SSL': False,
         'USERNAME': None,
         'STATIC_CONTAINER': None,
@@ -246,7 +246,9 @@ The timeout to use when attempting connections to Cloud Files. Defaults to 5 (se
 TTL
 ---
 
-Currently unused.
+The maximum time (in seconds) until a copy of one of your files distributed into the CDN is re-fetched from your container. Defaults to 86400 (seconds) (24h), the default set by python-cloudfiles.
+
+Note: After changing TTL, caching servers may not recognize the new TTL for this container until the previous TTL expires.
 
 USE_SSL
 -------

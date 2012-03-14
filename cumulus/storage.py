@@ -29,6 +29,7 @@ class CloudFilesStorage(Storage):
         self.timeout = timeout or CUMULUS['TIMEOUT']
         self.use_servicenet = CUMULUS['SERVICENET']
         self.username = username or CUMULUS['USERNAME']
+        self.ttl = CUMULUS['TTL']
         self.use_ssl = CUMULUS['USE_SSL']
 
 
@@ -70,7 +71,7 @@ class CloudFilesStorage(Storage):
         Set the container, making it publicly available if it is not already.
         """
         if not container.is_public():
-            container.make_public()
+            container.make_public(ttl=self.ttl)
         if hasattr(self, '_container_public_uri'):
             delattr(self, '_container_public_uri')
         self._container = container

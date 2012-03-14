@@ -1,4 +1,5 @@
 import cloudfiles
+from cloudfiles.consts import default_cdn_ttl
 
 from django.conf import settings
 
@@ -9,7 +10,7 @@ CUMULUS = {
     'CONTAINER': None,
     'SERVICENET': False,
     'TIMEOUT': 5,
-    'TTL': 600,
+    'TTL': default_cdn_ttl,  # 86400s (24h), python-cloudfiles default
     'USE_SSL': False,
     'USERNAME': None,
     'STATIC_CONTAINER': None,
@@ -36,6 +37,6 @@ if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
         'CONTAINER': getattr(settings, 'CUMULUS_CONTAINER'),
         'SERVICENET': getattr(settings, 'CUMULUS_USE_SERVICENET', False),
         'TIMEOUT': getattr(settings, 'CUMULUS_TIMEOUT', 5),
-        'TTL': getattr(settings, 'CUMULUS_TTL', 600),
+        'TTL': getattr(settings, 'CUMULUS_TTL', default_cdn_ttl),
         'USERNAME': getattr(settings, 'CUMULUS_USERNAME'),
     })
