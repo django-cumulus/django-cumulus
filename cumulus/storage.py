@@ -211,6 +211,27 @@ class CloudFilesStorage(Storage):
         """
         return '%s/%s' % (self.container_url, name)
 
+    def modified_time(self, name):
+        # CloudFiles return modified date in different formats
+        # depending on whether or not we pre-loaded objects.
+        # When pre-loaded, timezone is not included but we
+        # assume UTC. Since FileStorage returns localtime, and
+        # collectstatic compares these dates, we need to depend 
+        # on dateutil to help us convert timezones.
+        try:
+           from dateutil import parser, tz
+        except ImportError:
+            raise NotImplementedError()
+        obj = self.container.get_object(name)
+        # convert to string to date
+        date = parser.parse(obj.last_modified)
+        # if the date has no timzone, assume UTC
+        if date.tzinfo == None:
+            date = date.replace(tzinfo=tz.tzutc())
+        # convert date to local time w/o timezone
+        date = date.astimezone(tz.tzlocal()).replace(tzinfo=None)
+        return date
+
 
 class CloudStorageDirectory(File):
     """
