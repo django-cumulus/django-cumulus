@@ -16,16 +16,29 @@ HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get('HEADERS', {}
 
 
 def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
-    if hasattr(cloud_obj, 'headers'):
-        matched_headers = {}
-        for pattern, pattern_headers in header_patterns:
-            if pattern.match(cloud_obj.name):
-                matched_headers = pattern_headers.copy()
-                break
-        matched_headers.update(headers)
-        if matched_headers != cloud_obj.headers:
-            cloud_obj.headers = matched_headers
-            cloud_obj.sync_metadata()
+    """
+    Overwrite the given cloud_obj's headers with the ones given as ``headers`
+    and add additional headers as defined in the HEADERS setting depending on 
+    the cloud_obj's file name.
+    """
+    if not hasattr(cloud_obj, 'headers'):
+        if HEADER_PATTERNS:
+            print('Warning: will skip syncing headers. Please use latest '
+                  ' version of python-cloudfiles.')
+        return
+    # don't set headers on directories
+    content_type = getattr(cloud_obj, 'content_type', None)
+    if content_type == 'application/directory':
+        return
+    matched_headers = {}
+    for pattern, pattern_headers in header_patterns:
+        if pattern.match(cloud_obj.name):
+            matched_headers.update(pattern_headers.copy())
+    matched_headers.update(cloud_obj.headers)  # preserve headers already set
+    matched_headers.update(headers)  # explicitly set headers overwrite matches and already set headers
+    if matched_headers != cloud_obj.headers:
+        cloud_obj.headers = matched_headers
+        cloud_obj.sync_metadata()
 
 
 class CloudFilesStorage(Storage):
