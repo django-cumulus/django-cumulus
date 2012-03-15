@@ -23,7 +23,7 @@ if hasattr(settings, 'CUMULUS'):
 CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
 
 # backwards compatibility for old-style cumulus settings
-if not hasattr(settings, 'CUMULUS'):
+if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
     import warnings
     warnings.warn(
         "settings.CUMULUS_* is deprecated; use settings.CUMULUS instead.",
