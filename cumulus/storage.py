@@ -68,9 +68,10 @@ class CloudFilesStorage(Storage):
 
     def _set_container(self, container):
         """
-        Set the container, making it publicly available if it is not already.
+        Set the container (and, if needed, the configured TTL on it), making
+        the container publicly available.
         """
-        if not container.is_public():
+        if container.cdn_ttl != self.ttl or not container.is_public():
             container.make_public(ttl=self.ttl)
         if hasattr(self, '_container_public_uri'):
             delattr(self, '_container_public_uri')
