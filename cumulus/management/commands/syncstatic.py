@@ -18,6 +18,8 @@ class Command(BaseCommand):
         optparse.make_option('-t', '--test-run',
             action='store_true', dest='test_run', default=False,
             help="Performs a test run of the sync."),
+        optparse.make_option('-c', '--container',
+            dest='container', help="Override STATIC_CONTAINER."),
     )
 
     # settings from cumulus.settings
@@ -51,6 +53,7 @@ class Command(BaseCommand):
         self.wipe = options.get('wipe')
         self.test_run = options.get('test_run')
         self.verbosity = int(options.get('verbosity'))
+        self.CONTAINER = options.get('container', self.CONTAINER)
         self.sync_files()
 
     def sync_files(self):
