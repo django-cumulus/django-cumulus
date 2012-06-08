@@ -1,7 +1,10 @@
+import logging
 import mimetypes
 import os
 import re
 import hashlib
+from httplib import HTTPException
+from ssl import SSLError
 from gzip import GzipFile
 from StringIO import StringIO
 
@@ -13,6 +16,7 @@ from django.core.files.storage import Storage
 
 from .settings import CUMULUS
 
+logger = logging.getLogger(__name__)
 
 HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get('HEADERS', {}))
 
@@ -59,13 +63,14 @@ class CloudFilesStorage(Storage):
     connection_kwargs = CUMULUS['CONNECTION_ARGS']
     container_name = CUMULUS['CONTAINER']
     timeout = CUMULUS['TIMEOUT']
+    max_retries = CUMULUS['MAX_RETRIES']
     use_servicenet = CUMULUS['SERVICENET']
     username = CUMULUS['USERNAME']
     ttl = CUMULUS['TTL']
     use_ssl = CUMULUS['USE_SSL']
 
     def __init__(self, username=None, api_key=None, container=None, timeout=None,
-                 connection_kwargs=None, container_uri=None):
+                 max_retries=None, connection_kwargs=None, container_uri=None):
         """
         Initialize the settings for the connection and container.
         """
@@ -79,6 +84,8 @@ class CloudFilesStorage(Storage):
             self.container_name = container
         if timeout is not None:
             self.timeout = timeout
+        if max_retries is not None:
+            self.max_retries = max_retries
         if connection_kwargs is not None:
             self.connection_kwargs = connection_kwargs
 
@@ -148,7 +155,19 @@ class CloudFilesStorage(Storage):
         """
         Helper function to get retrieve the requested Cloud Files Object.
         """
-        return self.container.get_object(name)
+        tries = 0
+        while True:
+            try:
+                tries += 1
+                return self.container.get_object(name)
+            except (HTTPException, SSLError), e:
+                if tries >= self.max_retries:
+                    raise
+                logger.warning('Failed to retrieve %s: %r (attempt %d/%d)' % (
+                    name, e, tries, self.max_retries))
+                # make connection and container re-init on next try
+                del self._connection
+                del self._container
 
     def _open(self, name, mode='rb'):
         """
