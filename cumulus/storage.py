@@ -165,9 +165,10 @@ class CloudFilesStorage(Storage):
                     raise
                 logger.warning('Failed to retrieve %s: %r (attempt %d/%d)' % (
                     name, e, tries, self.max_retries))
-                # make connection and container re-init on next try
-                del self._connection
-                del self._container
+                # re-init the content and connection before retrying
+                if hasattr(content, 'seek'):
+                    content.seek(0)
+                self.connection.http_connect()
 
     def _open(self, name, mode='rb'):
         """
@@ -225,14 +226,15 @@ class CloudFilesStorage(Storage):
             try:
                 tries += 1
                 cloud_obj.send(content)
+                content.close()
                 break
             except (HTTPException, SSLError), e:
-                if tries == self.max_retries:
+                if tries >= self.max_retries:
                     raise
                 logger.warning('Failed to send %s: %r (attempt %d/%d)' % (
                     name, e, tries, self.max_retries))
-            finally:
-                content.close()
+                # re-init the connection before retrying
+                self.connection.http_connect()
         # if it went through, apply the custom headers
         sync_headers(cloud_obj)
         return name
@@ -241,13 +243,22 @@ class CloudFilesStorage(Storage):
         """
         Deletes the specified file from the storage system.
         """
-        try:
-            self.container.delete_object(name)
-        except ResponseError, exc:
-            if exc.status == 404:
-                pass
-            else:
-                raise
+        # try deleting the file <max_retries> tries
+        tries = 0
+        while True:
+            try:
+                tries += 1
+                self.container.delete_object(name)
+                break
+            except (HTTPException, SSLError, ResponseError), e:
+                if getattr(e, 'status', None) == 404:
+                    break
+                if tries >= self.max_retries:
+                    raise
+                logger.warning('Failed to delete %s: %r (attempt %d/%d)' % (
+                    name, e, tries, self.max_retries))
+                # re-init the connection before retrying
+                self.connection.http_connect()
 
     def exists(self, name):
         """
