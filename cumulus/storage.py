@@ -56,7 +56,7 @@ class CloudFilesStorage(Storage):
     default_quick_listdir = True
     api_key = CUMULUS['API_KEY']
     auth_url = CUMULUS['AUTH_URL']
-    connection_kwargs = {}
+    connection_kwargs = CUMULUS['CONNECTION_ARGS']
     container_name = CUMULUS['CONTAINER']
     timeout = CUMULUS['TIMEOUT']
     use_servicenet = CUMULUS['SERVICENET']
@@ -73,6 +73,8 @@ class CloudFilesStorage(Storage):
             self.username = username
         if api_key is not None:
             self.api_key = api_key
+        if connection_kwargs is not None:
+            self.connection_kwargs = connection_kwargs
         if container is not None:
             self.container_name = container
         if timeout is not None:

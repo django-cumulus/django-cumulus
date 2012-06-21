@@ -188,6 +188,7 @@ Below are the default settings::
         'CONTAINER': None,
         'SERVICENET': False,
         'TIMEOUT': 5,
+        'CONNECTION_ARGS': {},
         'TTL': 86400,
         'USE_SSL': False,
         'USERNAME': None,
@@ -242,6 +243,11 @@ TIMEOUT
 -------
 
 The timeout to use when attempting connections to Cloud Files. Defaults to 5 (seconds).
+
+CONNECTION_ARGS
+---------------
+
+Additional keyword arguments to pass to the cloudfiles.Connection instance. Useful for debugging. Default is {}, an empty dict.
 
 TTL
 ---
