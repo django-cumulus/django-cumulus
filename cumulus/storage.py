@@ -219,9 +219,21 @@ class CloudFilesStorage(Storage):
                 cloud_obj.size = content.file.size
             else:
                 cloud_obj.size = content.size
-            cloud_obj.send(content)
-
-        content.close()
+        # try sending the file <max_retries> tries
+        tries = 0
+        while True:
+            try:
+                tries += 1
+                cloud_obj.send(content)
+                break
+            except (HTTPException, SSLError), e:
+                if tries == self.max_retries:
+                    raise
+                logger.warning('Failed to send %s: %r (attempt %d/%d)' % (
+                    name, e, tries, self.max_retries))
+            finally:
+                content.close()
+        # if it went through, apply the custom headers
         sync_headers(cloud_obj)
         return name
 
