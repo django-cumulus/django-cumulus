@@ -186,7 +186,7 @@ class CloudFilesStorage(Storage):
         # Avoid infinite loop if path is '/'
         if path and path != '/':
             try:
-                self.container.get_object(path)
+                self._get_cloud_obj(path)
             except NoSuchObject:
                 self._save(path, CloudStorageDirectory(path))
 
@@ -337,8 +337,7 @@ class CloudFilesStorage(Storage):
         except ImportError:
             raise NotImplementedError("This functionality requires dateutil to be installed")
 
-        obj = self.container.get_object(name)
-
+        obj = self._get_cloud_obj(name)
         # convert to string to date
         date = parser.parse(obj.last_modified)
 
