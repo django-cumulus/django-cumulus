@@ -37,8 +37,8 @@ Add the following to your project's settings.py file::
 
     CUMULUS = {
         'USERNAME': 'YourUsername',
-        'CUMULUS_API_KEY': 'YourAPIKey',
-        'CUMULUS_CONTAINER': 'ContainerName'
+        'API_KEY': 'YourAPIKey',
+        'CONTAINER': 'ContainerName'
     }
     DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
 
@@ -109,7 +109,7 @@ Add the following required settings::
     CUMULUS = {
         'STATIC_CONTAINER': 'MyStaticContainer', # the name of the container to sync with
         'USE_SERVICENET': False, # whether to use rackspace's internal private network
-        'CUMULUS_FILTER_LIST': [] # a list of files to exclude from sync
+        'FILTER_LIST': [] # a list of files to exclude from sync
     }
 
 Invoke the management command::
