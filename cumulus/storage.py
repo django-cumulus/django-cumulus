@@ -338,11 +338,11 @@ class CloudFilesStorage(Storage):
             raise NotImplementedError("This functionality requires dateutil to be installed")
 
         obj = self._get_cloud_obj(name)
-        # convert to string to date
+        # convert string to date
         date = parser.parse(obj.last_modified)
 
-        # if the date has no timzone, assume UTC
-        if date.tzinfo is None:
+        # if the date has no timezone, assume UTC
+        if date.tzinfo == None:
             date = date.replace(tzinfo=tz.tzutc())
 
         # convert date to local time w/o timezone
