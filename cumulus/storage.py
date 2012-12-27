@@ -77,9 +77,9 @@ class CloudFilesStorage(Storage):
 
     container = property(_get_container, _set_container)
 
-    def _get_container_url(self):
+    def _get_container_url(self, use_ssl=False):
         if not hasattr(self, '_container_public_uri'):
-            if self.use_ssl:
+            if use_ssl or self.use_ssl:
                 self._container_public_uri = self.container.public_ssl_uri()
             else:
                 self._container_public_uri = self.container.public_uri()
