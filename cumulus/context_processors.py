@@ -11,5 +11,7 @@ def cdn_url(request):
     static_url = settings.STATIC_URL
     container_url = cloudfiles_storage._get_container_url()
     cdn_url = container_url + static_url
+    secure_container_url = cloudfiles_storage.container.public_ssl_uri()
+    ssl_url = secure_container_url + static_url
 
-    return {'CDN_URL': cdn_url}
+    return {'CDN_URL': cdn_url, 'CDN_SSL_URL': ssl_url}
