@@ -22,11 +22,6 @@ def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     and add additional headers as defined in the HEADERS setting depending on 
     the cloud_obj's file name.
     """
-    if not hasattr(cloud_obj, 'headers'):
-        if HEADER_PATTERNS:
-            print('Warning: will skip syncing headers. Please use latest '
-                  ' version of python-cloudfiles.')
-        return
     # don't set headers on directories
     content_type = getattr(cloud_obj, 'content_type', None)
     if content_type == 'application/directory':
@@ -170,13 +165,8 @@ class CloudFilesStorage(Storage):
             cloud_obj.content_type = mime_type
         # gzip the file if its of the right content type
         if cloud_obj.content_type in CUMULUS.get('GZIP_CONTENT_TYPES', []):
-            if hasattr(cloud_obj, 'headers'):
-                content = get_gzipped_contents(content)
-                cloud_obj.headers['Content-Encoding'] = 'gzip'
-            else:
-                print('Warning: will not compress any files due to missing'
-                      ' custom header support. Please use latest version of'
-                      ' python-cloudfiles.')
+            content = get_gzipped_contents(content)
+            cloud_obj.headers['Content-Encoding'] = 'gzip'
         # set file size
         if hasattr(content.file, 'size'):
             cloud_obj.size = content.file.size

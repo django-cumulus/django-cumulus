@@ -13,7 +13,7 @@ setup(
     name = "django-cumulus",
     version = __import__('cumulus').get_version().replace(' ', '-'),
     packages = find_packages(),
-    install_requires = ['python-cloudfiles>=1.7.9.3'],
+    install_requires = ['python-cloudfiles>=1.7.10'],
 
     author = "Rich Leland",
     author_email = "rich@richleland.com",
