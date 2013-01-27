@@ -221,13 +221,17 @@ class CloudFilesStorage(Storage):
         try:
            from dateutil import parser, tz
         except ImportError:
-            raise NotImplementedError()
+            raise NotImplementedError("This functionality requires dateutil to be installed")
+
         obj = self.container.get_object(name)
+
         # convert to string to date
         date = parser.parse(obj.last_modified)
+
         # if the date has no timzone, assume UTC
         if date.tzinfo == None:
             date = date.replace(tzinfo=tz.tzutc())
+
         # convert date to local time w/o timezone
         date = date.astimezone(tz.tzlocal()).replace(tzinfo=None)
         return date
