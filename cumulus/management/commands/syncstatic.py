@@ -7,6 +7,7 @@ import cloudfiles
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from cumulus.settings import CUMULUS
+from cumulus.storage import sync_headers
 
 class Command(BaseCommand):
     help = "Synchronizes static media to cloud files."
@@ -18,6 +19,8 @@ class Command(BaseCommand):
         optparse.make_option('-t', '--test-run',
             action='store_true', dest='test_run', default=False,
             help="Performs a test run of the sync."),
+        optparse.make_option('-c', '--container',
+            dest='container', help="Override STATIC_CONTAINER."),
     )
 
     # settings from cumulus.settings
@@ -51,6 +54,7 @@ class Command(BaseCommand):
         self.wipe = options.get('wipe')
         self.test_run = options.get('test_run')
         self.verbosity = int(options.get('verbosity'))
+        self.CONTAINER = options.get('container', self.CONTAINER)
         self.sync_files()
 
     def sync_files(self):
@@ -124,6 +128,7 @@ class Command(BaseCommand):
 
             if not self.test_run:
                 cloud_obj.load_from_filename(file_path)
+                sync_headers(cloud_obj)
             self.upload_count += 1
             if self.verbosity > 1:
                 print "Uploaded", cloud_obj.name

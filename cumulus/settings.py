@@ -1,4 +1,5 @@
 import cloudfiles
+from cloudfiles.consts import default_cdn_ttl
 
 from django.conf import settings
 
@@ -9,11 +10,13 @@ CUMULUS = {
     'CONTAINER': None,
     'SERVICENET': False,
     'TIMEOUT': 5,
-    'TTL': 600,
+    'TTL': default_cdn_ttl,  # 86400s (24h), python-cloudfiles default
     'USE_SSL': False,
     'USERNAME': None,
     'STATIC_CONTAINER': None,
-    'FILTER_LIST': []
+    'FILTER_LIST': [],
+    'HEADERS': {},
+    'GZIP_CONTENT_TYPES': [],
 }
 
 if hasattr(settings, 'CUMULUS'):
@@ -23,7 +26,7 @@ if hasattr(settings, 'CUMULUS'):
 CUMULUS['AUTH_URL'] = getattr(cloudfiles, CUMULUS['AUTH_URL'])
 
 # backwards compatibility for old-style cumulus settings
-if not hasattr(settings, 'CUMULUS'):
+if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
     import warnings
     warnings.warn(
         "settings.CUMULUS_* is deprecated; use settings.CUMULUS instead.",
@@ -36,6 +39,6 @@ if not hasattr(settings, 'CUMULUS'):
         'CONTAINER': getattr(settings, 'CUMULUS_CONTAINER'),
         'SERVICENET': getattr(settings, 'CUMULUS_USE_SERVICENET', False),
         'TIMEOUT': getattr(settings, 'CUMULUS_TIMEOUT', 5),
-        'TTL': getattr(settings, 'CUMULUS_TTL', 600),
+        'TTL': getattr(settings, 'CUMULUS_TTL', default_cdn_ttl),
         'USERNAME': getattr(settings, 'CUMULUS_USERNAME'),
     })

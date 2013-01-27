@@ -1,14 +1,51 @@
 import mimetypes
 import os
+import re
+from gzip import GzipFile
 from StringIO import StringIO
 
 import cloudfiles
 from cloudfiles.errors import NoSuchObject, ResponseError
 
-from django.core.files import File
+from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
 from .settings import CUMULUS
+
+
+HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get('HEADERS', {}))
+
+
+def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
+    """
+    Overwrite the given cloud_obj's headers with the ones given as ``headers`
+    and add additional headers as defined in the HEADERS setting depending on 
+    the cloud_obj's file name.
+    """
+    # don't set headers on directories
+    content_type = getattr(cloud_obj, 'content_type', None)
+    if content_type == 'application/directory':
+        return
+    matched_headers = {}
+    for pattern, pattern_headers in header_patterns:
+        if pattern.match(cloud_obj.name):
+            matched_headers.update(pattern_headers.copy())
+    matched_headers.update(cloud_obj.headers)  # preserve headers already set
+    matched_headers.update(headers)  # explicitly set headers overwrite matches and already set headers
+    if matched_headers != cloud_obj.headers:
+        cloud_obj.headers = matched_headers
+        cloud_obj.sync_metadata()
+
+
+def get_gzipped_contents(input_file):
+    """
+    Return a gzipped version of a previously opened file's buffer.
+    """
+    zbuf = StringIO()
+    zfile = GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+    zfile.write(input_file.read())
+    zfile.close()
+    return ContentFile(zbuf.getvalue())
 
 
 class CloudFilesStorage(Storage):
@@ -29,8 +66,11 @@ class CloudFilesStorage(Storage):
         self.timeout = timeout or CUMULUS['TIMEOUT']
         self.use_servicenet = CUMULUS['SERVICENET']
         self.username = username or CUMULUS['USERNAME']
+        self.ttl = CUMULUS['TTL']
         self.use_ssl = CUMULUS['USE_SSL']
 
+        if 'CONTAINER_URI' in CUMULUS:
+            self._container_public_uri = CUMULUS['CONTAINER_URI']
 
     def __getstate__(self):
         """
@@ -67,10 +107,11 @@ class CloudFilesStorage(Storage):
 
     def _set_container(self, container):
         """
-        Set the container, making it publicly available if it is not already.
+        Set the container (and, if needed, the configured TTL on it), making
+        the container publicly available.
         """
-        if not container.is_public():
-            container.make_public()
+        if container.cdn_ttl != self.ttl or not container.is_public():
+            container.make_public(ttl=self.ttl)
         if hasattr(self, '_container_public_uri'):
             delattr(self, '_container_public_uri')
         self._container = container
@@ -115,10 +156,6 @@ class CloudFilesStorage(Storage):
 
         content.open()
         cloud_obj = self.container.create_object(name)
-        if hasattr(content.file, 'size'):
-            cloud_obj.size = content.file.size
-        else:
-            cloud_obj.size = content.size
         # If the content type is available, pass it in directly rather than
         # getting the cloud object to try to guess.
         if hasattr(content.file, 'content_type'):
@@ -128,8 +165,18 @@ class CloudFilesStorage(Storage):
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             cloud_obj.content_type = mime_type
+        # gzip the file if its of the right content type
+        if cloud_obj.content_type in CUMULUS.get('GZIP_CONTENT_TYPES', []):
+            content = get_gzipped_contents(content)
+            cloud_obj.headers['Content-Encoding'] = 'gzip'
+        # set file size
+        if hasattr(content.file, 'size'):
+            cloud_obj.size = content.file.size
+        else:
+            cloud_obj.size = content.size
         cloud_obj.send(content)
         content.close()
+        sync_headers(cloud_obj)
         return name
 
     def delete(self, name):
@@ -209,6 +256,31 @@ class CloudFilesStorage(Storage):
         """
         return '%s/%s' % (self.container_url, name)
 
+    def modified_time(self, name):
+        # CloudFiles return modified date in different formats
+        # depending on whether or not we pre-loaded objects.
+        # When pre-loaded, timezone is not included but we
+        # assume UTC. Since FileStorage returns localtime, and
+        # collectstatic compares these dates, we need to depend 
+        # on dateutil to help us convert timezones.
+        try:
+           from dateutil import parser, tz
+        except ImportError:
+            raise NotImplementedError("This functionality requires dateutil to be installed")
+
+        obj = self.container.get_object(name)
+
+        # convert to string to date
+        date = parser.parse(obj.last_modified)
+
+        # if the date has no timzone, assume UTC
+        if date.tzinfo == None:
+            date = date.replace(tzinfo=tz.tzutc())
+
+        # convert date to local time w/o timezone
+        date = date.astimezone(tz.tzlocal()).replace(tzinfo=None)
+        return date
+
 
 class CloudStorageDirectory(File):
     """
@@ -286,7 +358,7 @@ class CloudFilesStorageFile(File):
 
     file = property(_get_file, _set_file)
 
-    def read(self, num_bytes=None):
+    def read(self, num_bytes=0):
         if self._pos == self._get_size():
             return ""
         if num_bytes and self._pos + num_bytes > self._get_size():
