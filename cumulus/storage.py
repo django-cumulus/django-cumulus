@@ -53,21 +53,31 @@ class CloudFilesStorage(Storage):
     Custom storage for Rackspace Cloud Files.
     """
     default_quick_listdir = True
+    api_key = CUMULUS['API_KEY']
+    auth_url = CUMULUS['AUTH_URL']
+    connection_kwargs = {}
+    container_name = CUMULUS['CONTAINER']
+    timeout = CUMULUS['TIMEOUT']
+    use_servicenet = CUMULUS['SERVICENET']
+    username = CUMULUS['USERNAME']
+    ttl = CUMULUS['TTL']
+    use_ssl = CUMULUS['USE_SSL']
 
     def __init__(self, username=None, api_key=None, container=None, timeout=None,
                  connection_kwargs=None):
         """
         Initialize the settings for the connection and container.
         """
-        self.api_key = api_key or CUMULUS['API_KEY']
-        self.auth_url = CUMULUS['AUTH_URL']
-        self.connection_kwargs = connection_kwargs or {}
-        self.container_name = container or CUMULUS['CONTAINER']
-        self.timeout = timeout or CUMULUS['TIMEOUT']
-        self.use_servicenet = CUMULUS['SERVICENET']
-        self.username = username or CUMULUS['USERNAME']
-        self.ttl = CUMULUS['TTL']
-        self.use_ssl = CUMULUS['USE_SSL']
+        if username is not None:
+            self.username = username
+        if api_key is not None:
+            self.api_key = api_key
+        if container is not None:
+            self.container_name = container
+        if timeout is not None:
+            self.timeout = timeout
+        if connection_kwargs is not None:
+            self.connection_kwargs = connection_kwargs
 
         if 'CONTAINER_URI' in CUMULUS:
             self._container_public_uri = CUMULUS['CONTAINER_URI']
@@ -315,10 +325,7 @@ class CloudFilesStaticStorage(CloudFilesStorage):
     than CUMULUS['CONTAINER']. Then, tell Django's staticfiles app by setting
     STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'.
     """
-    def __init__(self, *args, **kwargs):
-        if not 'container' in kwargs:
-            kwargs['container'] = CUMULUS['STATIC_CONTAINER']
-        super(CloudFilesStaticStorage, self).__init__(*args, **kwargs)
+    container_name = CUMULUS['STATIC_CONTAINER']
 
 
 class CloudFilesStorageFile(File):
