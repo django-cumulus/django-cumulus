@@ -54,7 +54,7 @@ class Command(BaseCommand):
         self.wipe = options.get('wipe')
         self.test_run = options.get('test_run')
         self.verbosity = int(options.get('verbosity'))
-        self.CONTAINER = options.get('container', self.CONTAINER)
+        self.STATIC_CONTAINER = options.get('container', self.STATIC_CONTAINER)
         self.sync_files()
 
     def sync_files(self):
