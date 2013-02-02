@@ -1,5 +1,5 @@
 """
-An interface to Rackspace Cloud Files through Django.
+An interface to the python-swiftclient api through Django.
 """
 __version_info__ = {
     'major': 1,

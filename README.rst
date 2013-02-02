@@ -1,7 +1,9 @@
 django-cumulus
 ==============
 
-The aim of django-cumulus is to provide a set of tools to utilize Rackspace Cloud Files through Django. It currently includes a custom file storage class, CloudFilesStorage.
+The aim of django-cumulus is to provide a set of tools to utilize the
+python-swiftclient api through Django. It currently includes a
+custom file storage class, SwiftclientStorage.
 
 Documentation
 *************

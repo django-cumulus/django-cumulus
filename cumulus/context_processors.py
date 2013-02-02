@@ -1,15 +1,17 @@
 from django.conf import settings
 
-from cumulus.storage import CloudFilesStorage
+from cumulus.storage import SwiftclientStorage
+
 
 def cdn_url(request):
     """
-    A context processor to expose the full cdn url in templates.
-
+    A context processor to expose the full static cdn url in templates.
     """
-    cloudfiles_storage = CloudFilesStorage()
+    openstack_storage = SwiftclientStorage()
+    content_url = openstack_storage.get_container_uri()
     static_url = settings.STATIC_URL
-    container_url = cloudfiles_storage._get_container_url()
-    cdn_url = container_url + static_url
-
-    return {'CDN_URL': cdn_url}
+    return {
+        "CDN_URL": content_url,  # deprecated
+        "CONTENT_URL": content_url,
+        "STATIC_URL": static_url,
+    }

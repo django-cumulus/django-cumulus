@@ -1,33 +1,29 @@
-"""Create a public (CDN) rackspace container.
-"""
-
+import swiftclient
 import sys
 
 from django.core.management.base import BaseCommand, CommandError
-import cloudfiles
 
-from cumulus import settings
-
-USAGE = 'django-admin.py container_create <container_name>'
+from cumulus.settings import CUMULUS
 
 
 class Command(BaseCommand):
-    """Create a public container"""
+    help = "Create a container."
+    args = "[container_name]"
+
+    def connect(self):
+        """
+        Connect using the swiftclient api.
+        """
+        self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
+                                           user=CUMULUS["USERNAME"],
+                                           key=CUMULUS["API_KEY"],
+                                           snet=CUMULUS["SERVICENET"])
 
     def handle(self, *args, **options):
-        """Main"""
-
-        if len(sys.argv) != 3:
-            raise CommandError('Usage: %s' % USAGE)
-
-        container_name = sys.argv[2]
-        print('Creating container: %s' % container_name)
-
-        conn = cloudfiles.get_connection(
-                        username=settings.CUMULUS['USERNAME'],
-                        api_key=settings.CUMULUS['API_KEY'])
-
-        container = conn.create_container(container_name)
-        container.make_public()
-
-        print('Done')
+        if len(args) != 1:
+            raise CommandError("Pass one and only one [container_name] as an argument")
+        self.connect()
+        container_name = args[0]
+        print("Creating container: {0}".format(container_name))
+        self.conn.put_container(container_name)
+        print("Done")

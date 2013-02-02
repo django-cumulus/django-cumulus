@@ -1,7 +1,9 @@
 django-cumulus
 ==============
 
-The aim of django-cumulus is to provide a set of tools to utilize Rackspace Cloud Files through Django. It currently includes a custom file storage class, CloudFilesStorage.
+The aim of django-cumulus is to provide a set of tools to utilize the
+swiftclient api through Django. It currently includes a custom file
+storage class, SwiftclientFilesStorage.
 
 .. toctree::
    :maxdepth: 2
@@ -40,16 +42,17 @@ Add the following to your project's settings.py file::
         'API_KEY': 'YourAPIKey',
         'CONTAINER': 'ContainerName'
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.OpenStackStorage'
 
-Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you can do the following in your models::
+Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you
+can do the following in your models::
 
-    from cumulus.storage import CloudFilesStorage
+    from cumulus.storage import OpenStackStorage
 
-    cloudfiles_storage = CloudFilesStorage()
+    openstack_storage = OpenStackStorage()
 
     class Photo(models.Model):
-        image = models.ImageField(storage=cloudfiles_storage, upload_to='photos')
+        image = models.ImageField(storage=openstack_storage, upload_to='photos')
         alt_text = models.CharField(max_length=255)
 
 Then access your files as you normally would through templates::
@@ -69,19 +72,24 @@ Or through Django's default ImageField or FileField api::
 Static media
 ************
 
-django-cumulus will work with Django's built-in ``collectstatic`` management command out of the box. You need to supply a few additional settings::
+django-cumulus will work with Django's built-in ``collectstatic``
+management command out of the box. You need to supply a few additional
+settings::
 
     CUMULUS = {
         'STATIC_CONTAINER': 'YourStaticContainer'
     }
-    STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'
+    STATICFILES_STORAGE = 'cumulus.storage.OpenStackStaticStorage'
 
 Context Processor
 *****************
 
-django-cumulus includes an optional context_processor for accessing the full CDN_URL of any container files from your templates.
+django-cumulus includes an optional context_processor for accessing
+the full CDN_URL of any container files from your templates.
 
-This is useful when you're using Cloud Files to serve you static media such as css and javascript and don't have access to the ``ImageField`` or ``FileField``'s url() convenience method.
+This is useful when you're using Swiftclient to serve you static media
+such as css and javascript and don't have access to the ``ImageField``
+or ``FileField``'s url() convenience method.
 
 Add ``cumulus.context_processors.cdn_url`` to your list of context processors in your project's settings.py file::
 
@@ -102,7 +110,9 @@ Management commands
 syncstatic
 ----------
 
-This management command synchronizes a local static media folder with a remote container. A few extra settings are required to make use of the command.
+This management command synchronizes a local static media folder with
+a remote container. A few extra settings are required to make use of
+the command.
 
 Add the following required settings::
 
@@ -127,7 +137,7 @@ For a full list of available options::
 container_create
 ----------------
 
-This management command creates a new container in Cloud Files.
+This management command creates a new container.
 
 Invoke the management command::
 
@@ -140,7 +150,7 @@ For a full list of available options::
 container_delete
 ----------------
 
-This management command deletes a container in Cloud Files.
+This management command deletes a container.
 
 Invoke the management command::
 
@@ -153,7 +163,7 @@ For a full list of available options::
 container_info
 --------------
 
-This management command gathers information about containers in Cloud Files.
+This management command gathers information about containers:
 
 Invoke the management command::
 
@@ -166,7 +176,7 @@ For a full list of available options::
 container_list
 --------------
 
-This management command lists all the items in a Cloud Files container to stdout.
+This management command lists all the items in a container to stdout.
 
 Invoke the management command::
 
@@ -231,7 +241,10 @@ A list of items to exclude when using the ``syncstatic`` management command. Def
 SERVICENET
 ----------
 
-Specifies whether to use Rackspace's private network (True) or not (False). If you host your sites on Rackspace, you should set this to True in production as you will not incur data transfer fees between your server(s) and Cloud Files on the private network.
+Specifies whether to use Rackspace's private network (True) or not
+(False). If you host your sites on Rackspace, you should set this to
+True in production as you will not incur data transfer fees between
+your server(s) and the cdn on the private network.
 
 STATIC_CONTAINER
 ----------------
@@ -241,7 +254,7 @@ When using Django's ``collectstatic`` or django-cumulus's ``syncstatic`` command
 TIMEOUT
 -------
 
-The timeout to use when attempting connections to Cloud Files. Defaults to 5 (seconds).
+The timeout to use when attempting connections over swiftclient. Defaults to 5 (seconds).
 
 TTL
 ---
@@ -264,7 +277,8 @@ Requirements
 ************
 
 * Django>=1.2
-* python-cloudfiles >= 1.7.9
+* python-swiftflient==1.2.0
+* python-cloudfiles==1.7.10
 
 Tests
 *****

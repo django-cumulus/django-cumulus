@@ -1,50 +1,68 @@
-import cloudfiles
+import StringIO
+import swiftclient
 import optparse
 
-from cumulus import settings
 from django.core.management.base import BaseCommand, CommandError
+
+from cumulus.cloudfiles_cdn import CloudfilesCDN
+from cumulus.settings import CUMULUS
 
 
 class Command(BaseCommand):
+    help = "Display info for containers"
     args = "[container_name container_name ...]"
-    help = "Display info for cloud files containers"
 
     option_list = BaseCommand.option_list + (
-        optparse.make_option('-n', '--name', action='store_true', dest='name', default=False),
-        optparse.make_option('-c', '--count', action='store_true', dest='count', default=False),
-        optparse.make_option('-s', '--size', action='store_true', dest='size', default=False),
-        optparse.make_option('-u', '--uri', action='store_true', dest='uri', default=False)
+        optparse.make_option("-n", "--name", action="store_true", dest="name", default=False),
+        optparse.make_option("-c", "--count", action="store_true", dest="count", default=False),
+        optparse.make_option("-s", "--size", action="store_true", dest="size", default=False),
+        optparse.make_option("-u", "--uri", action="store_true", dest="uri", default=False)
     )
 
+    def connect(self):
+        """
+        Connect using the swiftclient api and the cloudfiles api.
+        """
+        self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
+                                           user=CUMULUS["USERNAME"],
+                                           key=CUMULUS["API_KEY"],
+                                           snet=CUMULUS["SERVICENET"])
+        self.cloudfiles_cdn = CloudfilesCDN()
+
     def handle(self, *args, **options):
-        USERNAME = settings.CUMULUS['USERNAME']
-        API_KEY = settings.CUMULUS['API_KEY']
-
-        conn = cloudfiles.get_connection(USERNAME, API_KEY)
+        self.connect()
+        account = self.conn.get_account()
         if args:
-            containers = []
-            for container_name in args:
-                try:
-                    container = conn.get_container(container_name)
-                except cloudfiles.errors.NoSuchContainer:
-                    raise CommandError("Container does not exist: %s" % container_name)
-                containers.append(container)
+            container_names = args
         else:
-            containers = conn.get_all_containers()
+            container_names = [c["name"] for c in account[1]]
+        containers = {}
+        for container_name in container_names:
+            containers[container_name] = self.conn.head_container(container_name)
 
-        opts = ['name', 'count', 'size', 'uri']
+        if not containers:
+            print("No containers found.")
+            return
 
-        for container in containers:
+        if not args:
+            print("{0}, {1}, {2}\n".format(
+                account[0]["x-account-container-count"],
+                account[0]["x-account-object-count"],
+                account[0]["x-account-bytes-used"],
+            ))
+
+        opts = ["name", "count", "size", "uri"]
+        for container_name, values in containers.iteritems():
+            uri = self.cloudfiles_cdn.public_uri(container_name)
+            if not uri:
+                uri = "NOT PUBLIC"
             info = {
-                'name': container.name,
-                'count': container.object_count,
-                'size': container.size_used,
-                'uri': container.public_uri() if container.is_public() else "NOT PUBLIC",
+                "name": container_name,
+                "count": values["x-container-object-count"],
+                "size": values["x-container-bytes-used"],
+                "uri": uri,
             }
             output = [str(info[o]) for o in opts if options.get(o)]
             if not output:
                 output = [str(info[o]) for o in opts]
-            print ', '.join(output)
-
-        if not containers:
-            print 'No containers found.'
+            print(", ".join(output))
