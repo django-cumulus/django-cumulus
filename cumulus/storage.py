@@ -1,200 +1,175 @@
 import mimetypes
 import os
-from StringIO import StringIO
 
-import cloudfiles
-from cloudfiles.errors import NoSuchObject, ResponseError
+import swiftclient
 
+from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import Storage
 
-from .settings import CUMULUS
+from cumulus.cloudfiles_cdn import CloudfilesCDN
+from cumulus.settings import CUMULUS
 
 
-class CloudFilesStorage(Storage):
+class SwiftclientStorage(Storage):
     """
-    Custom storage for Rackspace Cloud Files.
+    Custom storage for Swiftclient.
     """
     default_quick_listdir = True
 
-    def __init__(self, username=None, api_key=None, container=None, timeout=None,
+    def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None):
         """
         Initialize the settings for the connection and container.
         """
-        self.api_key = api_key or CUMULUS['API_KEY']
-        self.auth_url = CUMULUS['AUTH_URL']
+        self.api_key = api_key or CUMULUS["API_KEY"]
+        self.auth_url = CUMULUS["AUTH_URL"]
         self.connection_kwargs = connection_kwargs or {}
-        self.container_name = container or CUMULUS['CONTAINER']
-        self.timeout = timeout or CUMULUS['TIMEOUT']
-        self.use_servicenet = CUMULUS['SERVICENET']
-        self.username = username or CUMULUS['USERNAME']
-        self.use_ssl = CUMULUS['USE_SSL']
-
+        self.container_name = container or CUMULUS["CONTAINER"]
+        self.use_snet = CUMULUS["SERVICENET"]
+        self.username = username or CUMULUS["USERNAME"]
+        self.use_ssl = CUMULUS["USE_SSL"]
+        self.swiftclient_connection = self.get_swiftclient_connection()
+        self.cloudfiles_connection = self.get_cloudfiles_connection()
+        self.container = self.get_container()
+        self.container_public_uri = self.get_container_uri()
+        self.full_listdir("img/")
 
     def __getstate__(self):
         """
         Return a picklable representation of the storage.
         """
-        return dict(username=self.username,
-                    api_key=self.api_key,
-                    container_name=self.container_name,
-                    timeout=self.timeout,
-                    use_servicenet=self.use_servicenet,
-                    connection_kwargs=self.connection_kwargs)
+        return {
+            "username": self.username,
+            "api_key": self.api_key,
+            "container_name": self.container_name,
+            "use_snet": self.use_snet,
+            "connection_kwargs": self.connection_kwargs
+        }
 
-    def _get_connection(self):
-        if not hasattr(self, '_connection'):
-            self._connection = cloudfiles.get_connection(
-                                  username=self.username,
-                                  api_key=self.api_key,
-                                  authurl = self.auth_url,
-                                  timeout=self.timeout,
-                                  servicenet=self.use_servicenet,
-                                  **self.connection_kwargs)
-        return self._connection
-
-    def _set_connection(self, value):
-        self._connection = value
-
-    connection = property(_get_connection, _set_connection)
-
-    def _get_container(self):
-        if not hasattr(self, '_container'):
-            self.container = self.connection.get_container(
-                                                        self.container_name)
-        return self._container
-
-    def _set_container(self, container):
+    def get_swiftclient_connection(self):
         """
-        Set the container, making it publicly available if it is not already.
+        Get a connection to the swiftclient api.
         """
-        if not container.is_public():
-            container.make_public()
-        if hasattr(self, '_container_public_uri'):
-            delattr(self, '_container_public_uri')
-        self._container = container
+        if hasattr(self, "swiftclient_connection"):
+            return self.swiftclient_connection
+        return swiftclient.Connection(authurl=self.auth_url,
+                                      user=self.username,
+                                      snet=self.use_snet,
+                                      key=self.api_key,
+                                      **self.connection_kwargs)
 
-    container = property(_get_container, _set_container)
+    def get_cloudfiles_connection(self):
+        """
+        Get a connection to the cloudfiles api.
+        """
+        if hasattr(self, "cloudfiles_connection"):
+            return self.cloudfiles_connection
+        return CloudfilesCDN()
 
-    def _get_container_url(self):
-        if not hasattr(self, '_container_public_uri'):
-            if self.use_ssl:
-                self._container_public_uri = self.container.public_ssl_uri()
-            else:
-                self._container_public_uri = self.container.public_uri()
-        if CUMULUS['CNAMES'] and self._container_public_uri in CUMULUS['CNAMES']:
-            self._container_public_uri = CUMULUS['CNAMES'][self._container_public_uri]
-        return self._container_public_uri
+    def get_cloud_objs_names(self):
+        """
+        Get a list containing the name of each cloud object.
+        """
+        if hasattr(self, "cloud_objs_names"):
+            return self.cloud_objs_names
+        return [cloud_obj["name"] for cloud_obj in self.container[1]]
 
-    container_url = property(_get_container_url)
+    def get_container(self):
+        """
+        Get the container, making it publicly available if it is not already.
+        """
+        if hasattr(self, "container"):
+            container = self.container
+        container = self.swiftclient_connection.get_container(self.container_name)
+        if not self.cloudfiles_connection.public_uri(self.container_name):
+            self.cloudfiles_connection.make_public(self.container_name)
+        return container
+
+    def get_container_uri(self):
+        if hasattr(self, "container_public_uri"):
+            return self.container_public_uri
+        elif self.use_ssl:
+            container_public_uri = CUMULUS["CONTAINER_SSL_URI"]
+        elif CUMULUS["CONTAINER_URI"]:
+            container_public_uri = CUMULUS["CONTAINER_URI"]
+        elif self.cloudfiles_connection.public_uri(self.container_name):
+            container_public_uri = self.cloudfiles_connection.public_uri(self.container_name)
+        if CUMULUS["CNAMES"] and container_public_uri in CUMULUS["CNAMES"]:
+            container_public_uri = CUMULUS["CNAMES"][container_public_uri]
+        return container_public_uri
 
     def _get_cloud_obj(self, name):
         """
-        Helper function to get retrieve the requested Cloud Files Object.
+        Helper function to retrieve the requested Cloud Files Object.
         """
-        return self.container.get_object(name)
+        if not hasattr(self, "cloud_objs_names"):
+            self.cloud_objs_names = self.get_cloud_objs_names()
+        return bool(name in self.cloud_objs_names)
 
-    def _open(self, name, mode='rb'):
+    def _open(self, name, mode="rb"):
         """
-        Return the CloudFilesStorageFile.
+        Return the SwiftclientStorageFile.
         """
-        return CloudFilesStorageFile(storage=self, name=name)
+        return SwiftclientStorageFile(storage=self, name=name)
 
     def _save(self, name, content):
         """
-        Use the Cloud Files service to write ``content`` to a remote file
-        (called ``name``).
+        Use the Swiftclient service to write ``content`` to a remote
+        file (called ``name``).
         """
         (path, last) = os.path.split(name)
-        if path:
-            try:
-                self.container.get_object(path)
-            except NoSuchObject:
-                self._save(path, CloudStorageDirectory(path))
-
         content.open()
-        cloud_obj = self.container.create_object(name)
-        if hasattr(content.file, 'size'):
-            cloud_obj.size = content.file.size
+        if hasattr(content.file, "size"):
+            size = content.file.size
         else:
-            cloud_obj.size = content.size
-        # If the content type is available, pass it in directly rather than
-        # getting the cloud object to try to guess.
-        if hasattr(content.file, 'content_type'):
-            cloud_obj.content_type = content.file.content_type
-        elif hasattr(content, 'content_type'):
-            cloud_obj.content_type = content.content_type
+            size = content.size
+        # Checks if the content_type is already set.
+        # Otherwise uses the mimetypes library to guess.
+        if hasattr(content.file, "content_type"):
+            content_type = content.file.content_type
+        elif hasattr(content, "content_type"):
+            content_type = content.content_type
         else:
             mime_type, encoding = mimetypes.guess_type(name)
-            cloud_obj.content_type = mime_type
-        cloud_obj.send(content)
+            content_type = mime_type
+        if name not in self.cloud_objs_names:
+            self.swiftclient_connection.put_object(container=self.container_name,
+                                                   obj=name,
+                                                   contents=content,
+                                                   content_length=size,
+                                                   etag=None,
+                                                   content_type=content_type,
+                                                   headers=None)
+            self.cloud_objs_names.append(name)
         content.close()
         return name
 
     def delete(self, name):
         """
         Deletes the specified file from the storage system.
+
+        Deleting a model doesn't delete associated files:
+        https://docs.djangoproject.com/en/1.3/releases/1.3/#deleting-a-model-doesn-t-delete-associated-files
         """
         try:
-            self.container.delete_object(name)
-        except ResponseError, exc:
-            if exc.status == 404:
+            self.swiftclient_connection.delete_object(
+                container=self.container_name,
+                obj=name)
+            self.cloud_objs_names.remove(name)
+        except swiftclient.client.ClientException, exc:
+            if exc.http_status == 404:
                 pass
             else:
                 raise
 
     def exists(self, name):
         """
-        Returns True if a file referenced by the given name already exists in
-        the storage system, or False if the name is available for a new file.
+        Returns True if a file referenced by the given name already
+        exists in the storage system, or False if the name is
+        available for a new file.
         """
-        try:
-            self._get_cloud_obj(name)
-            return True
-        except NoSuchObject:
-            return False
-
-    def listdir(self, path):
-        """
-        Lists the contents of the specified path, returning a 2-tuple; the
-        first being an empty list of directories (not available for quick-
-        listing), the second being a list of filenames.
-
-        If the list of directories is required, use the full_listdir method.
-        """
-        files = []
-        if path and not path.endswith('/'):
-            path = '%s/' % path
-        path_len = len(path)
-        for name in self.container.list_objects(path=path):
-            files.append(name[path_len:])
-        return ([], files)
-
-    def full_listdir(self, path):
-        """
-        Lists the contents of the specified path, returning a 2-tuple of lists;
-        the first item being directories, the second item being files.
-
-        On large containers, this may be a slow operation for root containers
-        because every single object must be returned (cloudfiles does not
-        provide an explicit way of listing directories).
-        """
-        dirs = set()
-        files = []
-        if path and not path.endswith('/'):
-            path = '%s/' % path
-        path_len = len(path)
-        for name in self.container.list_objects(prefix=path):
-            name = name[path_len:]
-            slash = name[1:-1].find('/') + 1
-            if slash:
-                dirs.add(name[:slash])
-            elif name:
-                files.append(name)
-        dirs = list(dirs)
-        dirs.sort()
-        return (dirs, files)
+        return bool(self._get_cloud_obj(name))
 
     def size(self, name):
         """
@@ -204,65 +179,88 @@ class CloudFilesStorage(Storage):
 
     def url(self, name):
         """
-        Returns an absolute URL where the file's contents can be accessed
-        directly by a web browser.
+        Returns an absolute URL where the content of each file can be
+        accessed directly by a web browser.
         """
-        return '%s/%s' % (self.container_url, name)
+        return "{0}/{1}".format(self.container_public_uri, name)
+
+    def listdir(self, path):
+        """
+        Lists the contents of the specified path, returning a 2-tuple;
+        the first being an empty list of directories (not available
+        for quick-listing), the second being a list of filenames.
+
+        If the list of directories is required, use the full_listdir method.
+        """
+        if not hasattr(self, "cloud_objs"):
+            self.cloud_objs_names = self.get_cloud_objs_names()
+        files = []
+        if path and not path.endswith("/"):
+            path = "{0}/".format(path)
+        path_len = len(path)
+        for name in self.cloud_objs_names:
+            if name.startswith(path):
+                files.append(name[path_len:])
+        return ([], files)
+
+    def full_listdir(self, path):
+        """
+        Lists the contents of the specified path, returning a 2-tuple
+        of lists; the first item being directories, the second item
+        being files.
+        """
+        if not hasattr(self, "cloud_objs"):
+            self.cloud_objs_names = self.get_cloud_objs_names()
+        dirs = set()
+        files = []
+        if path and not path.endswith("/"):
+            path = "{0}/".format(path)
+        path_len = len(path)
+        for name in self.cloud_objs_names:
+            if name.startswith(path):
+                name = name[path_len:]
+                slash = name[1:-1].find("/") + 1
+                if slash:
+                    dirs.add(name[:slash])
+                    files.append(name[slash + 1:])
+                else:
+                    files.append(name)
+        dirs = list(dirs)
+        dirs.sort()
+        return (dirs, files)
 
 
-class CloudStorageDirectory(File):
+class SwiftclientStaticStorage(SwiftclientStorage):
     """
-    A File-like object that creates a directory at cloudfiles
-    """
+    Subclasses SwiftclientStorage to automatically set the container
+    to the one specified in CUMULUS["STATIC_CONTAINER"]. This provides
+    the ability to specify a separate storage backend for Django's
+    collectstatic command.
 
-    def __init__(self, name):
-        super(CloudStorageDirectory, self).__init__(StringIO(), name=name)
-        self.file.content_type = 'application/directory'
-        self.size = 0
-
-    def __str__(self):
-        return 'directory'
-
-    def __nonzero__(self):
-        return True
-
-    def open(self, mode=None):
-        self.seek(0)
-
-    def close(self):
-        pass
-
-
-class CloudFilesStaticStorage(CloudFilesStorage):
-    """
-    Subclasses CloudFilesStorage to automatically set the container to the one
-    specified in CUMULUS['STATIC_CONTAINER']. This provides the ability to
-    specify a separate storage backend for Django's collectstatic command.
-
-    To use, make sure CUMULUS['STATIC_CONTAINER'] is set to something other
-    than CUMULUS['CONTAINER']. Then, tell Django's staticfiles app by setting
-    STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'.
+    To use, make sure CUMULUS["STATIC_CONTAINER"] is set to something other
+    than CUMULUS["CONTAINER"]. Then, tell Django's staticfiles app by setting
+    STATICFILES_STORAGE = "cumulus.storage.SwiftclientStaticStorage".
     """
     def __init__(self, *args, **kwargs):
-        if not 'container' in kwargs:
-            kwargs['container'] = CUMULUS['STATIC_CONTAINER']
-        super(CloudFilesStaticStorage, self).__init__(*args, **kwargs)
+        if not "container" in kwargs:
+            kwargs["container"] = CUMULUS["STATIC_CONTAINER"]
+        super(SwiftclientStaticStorage, self).__init__(*args, **kwargs)
 
 
-class CloudFilesStorageFile(File):
+class SwiftclientStorageFile(File):
     closed = False
 
     def __init__(self, storage, name, *args, **kwargs):
         self._storage = storage
         self._pos = 0
-        super(CloudFilesStorageFile, self).__init__(file=None, name=name,
+        super(SwiftclientStorageFile, self).__init__(file=None, name=name,
                                                     *args, **kwargs)
 
     def _get_pos(self):
         return self._pos
 
     def _get_size(self):
-        if not hasattr(self, '_size'):
+        if not hasattr(self, "_size"):
             self._size = self._storage.size(self.name)
         return self._size
 
@@ -272,14 +270,16 @@ class CloudFilesStorageFile(File):
     size = property(_get_size, _set_size)
 
     def _get_file(self):
-        if not hasattr(self, '_file'):
-            self._file = self._storage._get_cloud_obj(self.name)
+        if not hasattr(self, "_file"):
+            self._file = self._storage.swiftclient_connection.get_object(
+                self._storage.container_name, self.name)
+            import ipdb; ipdb.set_trace()
             self._file.tell = self._get_pos
         return self._file
 
     def _set_file(self, value):
         if value is None:
-            if hasattr(self, '_file'):
+            if hasattr(self, "_file"):
                 del self._file
         else:
             self._file = value
@@ -306,42 +306,57 @@ class CloudFilesStorageFile(File):
 
     @property
     def closed(self):
-        return not hasattr(self, '_file')
+        return not hasattr(self, "_file")
 
     def seek(self, pos):
         self._pos = pos
 
-class ThreadSafeCloudFilesStorage(CloudFilesStorage):
-    """
-    Extends CloudFilesStorage to make it mostly thread safe.
 
-    As long as you don't pass container or cloud objects
-    between threads, you'll be thread safe.
+class ThreadSafeSwiftclientStorage(SwiftclientStorage):
+    """
+    Extends SwiftclientStorage to make it mostly thread safe.
+
+    As long as you do not pass container or cloud objects between
+    threads, you will be thread safe.
 
     Uses one cloudfiles connection per thread.
     """
 
     def __init__(self, *args, **kwargs):
-        super(ThreadSafeCloudFilesStorage, self).__init__(*args, **kwargs)
-
+        super(ThreadSafeSwiftclientStorage, self).__init__(*args, **kwargs)
         import threading
         self.local_cache = threading.local()
+        self.local_cache.swiftclient_connection = self.get_swiftclient_connection()
+        self.local_cache.cloudfiles_connection = self.get_cloudfiles_connection()
+        self.local_cache.container = self.get_container()
 
-    def _get_connection(self):
-        if not hasattr(self.local_cache, 'connection'):
-            connection = cloudfiles.get_connection(self.username,
-                                    self.api_key, **self.connection_kwargs)
-            self.local_cache.connection = connection
+    def get_swiftclient_connection(self):
+        """
+        Get a thread safe connection to the swiftclient api.
+        """
+        if hasattr(self.local_cache, "swiftclient_connection"):
+            return self.local_cache.swiftclient_connection
+        return swiftclient.Connection(authurl=self.auth_url,
+                                      user=self.username,
+                                      snet=self.use_snet,
+                                      key=self.api_key,
+                                      **self.connection_kwargs)
 
-        return self.local_cache.connection
+    def get_cloudfiles_connection(self):
+        """
+        Get a thread safe connection to the cloudfiles api.
+        """
+        if hasattr(self.local_cache, "cloudfiles_connection"):
+            return self.local_cache.cloudfiles_connection
+        return CloudfilesCDN()
 
-    connection = property(_get_connection, CloudFilesStorage._set_connection)
-
-    def _get_container(self):
-        if not hasattr(self.local_cache, 'container'):
-            container = self.connection.get_container(self.container_name)
-            self.local_cache.container = container
-
-        return self.local_cache.container
-
-    container = property(_get_container, CloudFilesStorage._set_container)
+    def get_container(self):
+        """
+        Get a thread safe connection to the container.
+        """
+        if hasattr(self.local_cache, "container"):
+            container = self.local_cache.container
+        container = self.swiftclient_connection.get_container(self.container_name)
+        if not self.local_cache.cloudfiles_connection.public_uri(self.container_name):
+            self.local_cache.cloudfiles_connection.make_public(self.container_name)
+        return container
