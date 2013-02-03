@@ -17,7 +17,6 @@ CUMULUS = {
     "STATIC_CONTAINER": None,
     "INCLUDE_LIST": [],
     "EXCLUDE_LIST": [],
-    "CLOUDFILES_AUTH_URL": "us_authurl",
 }
 
 if hasattr(settings, "CUMULUS"):
@@ -28,7 +27,7 @@ if "FILTER_LIST" in settings.CUMULUS.keys():
 
 
 # set auth_url to the actual URL string in the cloudfiles module
-CUMULUS["CLOUDFILES_AUTH_URL"] = getattr(cloudfiles, CUMULUS["CLOUDFILES_AUTH_URL"])
+CUMULUS["AUTH_URL"] = getattr(cloudfiles, CUMULUS["AUTH_URL"])
 
 # backwards compatibility for old-style cumulus settings
 if not hasattr(settings, "CUMULUS"):
@@ -40,12 +39,11 @@ if not hasattr(settings, "CUMULUS"):
 
     CUMULUS.update({
         "API_KEY": getattr(settings, "CUMULUS_API_KEY"),
-        "AUTH_URL": getattr(settings, "CUMULUS_AUTH_URL"),
+        "AUTH_URL": getattr(settings, "AUTH_URL", "us_authurl"),
         "CNAMES": getattr(settings, "CUMULUS_CNAMES", None),
         "CONTAINER": getattr(settings, "CUMULUS_CONTAINER"),
         "SERVICENET": getattr(settings, "CUMULUS_USE_SERVICENET", False),
         "TIMEOUT": getattr(settings, "CUMULUS_TIMEOUT", 5),
         "TTL": getattr(settings, "CUMULUS_TTL", 600),
         "USERNAME": getattr(settings, "CUMULUS_USERNAME"),
-        "CLOUDFILES_AUTH_URL": getattr(settings, "CLOUDFILES_AUTH_URL", "us_authurl")
     })

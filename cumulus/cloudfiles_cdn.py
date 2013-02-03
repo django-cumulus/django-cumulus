@@ -21,7 +21,7 @@ class CloudfilesCDN(object):
         self.conn = cloudfiles.get_connection(username=CUMULUS["USERNAME"],
                                               api_key=CUMULUS["API_KEY"],
                                               servicenet=CUMULUS["SERVICENET"],
-                                              authurl=CUMULUS["CLOUDFILES_AUTH_URL"])
+                                              authurl=CUMULUS["AUTH_URL"])
 
     def public_uri(self, container_name):
         """
