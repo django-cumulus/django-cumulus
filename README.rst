@@ -1,5 +1,3 @@
-**NOTE:** This code *may* be moved back into django-storages in the near future! Please see https://github.com/richleland/django-cumulus/pull/33#issuecomment-12752971 for more info. There is some open discussion among contributors.
-
 django-cumulus
 ==============
 
