@@ -34,7 +34,7 @@ class Command(BaseCommand):
         print("Connecting")
         container = conn.get_container(container_name)
 
-        print("Deleting objects from container")
+        print("Deleting objects from container {0}".format(container_name))
         # divide the objects to delete equally into one list per processor
         cloud_objs = [cloud_obj["name"] for cloud_obj in container[1]]
         nbr_chunks = multiprocessing.cpu_count()
