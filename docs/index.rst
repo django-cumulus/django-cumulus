@@ -266,15 +266,15 @@ HEADERS
 -------
 
 Set headers based on a regular expression in the file name. This can be used to allow Firefox to
-access webfonts across domains:
+access webfonts across domains::
 
-CUMULUS = {
-    'HEADERS': (
-        (r'.*\.(eot|otf|woff|ttf)$', {
-            'Access-Control-Allow-Origin': '*'
-        }),
-    )
-}
+   CUMULUS = {
+       'HEADERS': (
+           (r'.*\.(eot|otf|woff|ttf)$', {
+               'Access-Control-Allow-Origin': '*'
+           }),
+       )
+   }
 
 Requirements
 ************
