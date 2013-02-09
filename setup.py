@@ -16,8 +16,8 @@ setup(
     version = __import__("cumulus").get_version().replace(" ", "-"),
     packages = find_packages(),
     install_requires = [
+        "pyrax==1.2.6",
         "python-cloudfiles==1.7.10"
-        "python-swiftclient==1.2.0",
     ],
     author = "Rich Leland",
     author_email = "rich@richleland.com",

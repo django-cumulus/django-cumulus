@@ -43,31 +43,33 @@ class CumulusTests(TestCase):
         self.assertEqual(self.thing.image.width, 1)
         self.assertEqual(self.thing.image.height, 1)
         self.assertEqual(self.thing.image.size, 695)
-        import ipdb; ipdb.set_trace()
+
         self.assertTrue("rackcdn.com" in self.thing.image.url,
                         "URL is not a valid Cloud Files CDN URL.")
 
         self.assertEqual(self.thing.document.size, 12)
         self.assertTrue("rackcdn.com" in self.thing.document.url,
                         "URL is not a valid Cloud Files CDN URL.")
-        delattr(self.thing.document.storage, "_container_public_uri")
-        self.thing.document.storage.use_ssl = True
-        self.assertTrue(self.thing.document.url.startswith("https"))
+        # TODO test ssl and cname urls
+        # TODO test servicenet
+        # TODO test auth_url
+        # TODO connection kwargs?
+        # TODO headers?
 
     def test_image_content_type(self):
         "Ensure content type is set properly for the uploaded image."
-        cloud_image = openstack_storage.swiftclient_connection.get_object(
-            openstack_storage.container_name, self.thing.image.name)
-        self.assertEqual(cloud_image[0]["content-type"], "image/jpeg")
+        cloud_image = openstack_storage.container.get_object(
+            self.thing.image.name)
+        self.assertEqual(cloud_image.content_type, "image/jpeg")
 
     def test_text_content_type(self):
         "Ensure content type is set properly for the uploaded text."
-        cloud_document = openstack_storage.swiftclient_connection.get_object(
-            openstack_storage.container_name, self.thing.document.name)
-        self.assertEqual(cloud_document[0]["content-type"], "text/plain")
+        cloud_document = openstack_storage.container.get_object(
+            self.thing.document.name)
+        self.assertEqual(cloud_document.content_type, "text/plain")
 
     def test_custom_content_type(self):
         "Ensure content type is set properly when custom content type is supplied."
-        cloud_custom = openstack_storage.swiftclient_connection.get_object(
-            openstack_storage.container_name, self.thing.custom.name)
-        self.assertEqual(cloud_custom[0]["content-type"], "custom/type")
+        cloud_custom = openstack_storage.container.get_object(
+            self.thing.custom.name)
+        self.assertEqual(cloud_custom.content_type, "custom/type")
