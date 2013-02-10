@@ -47,7 +47,7 @@ class Command(BaseCommand):
         p = multiprocessing.Pool()
         start_time = datetime.datetime.now()
         # send out the work chunks to the Pool
-        po = p.map_async(delete_cloudobjs, chunks)
+        po = p.map_async(delete_cloud_objects, chunks)
         # we get a list of lists back, one per chunk, so we have to
         # flatten them back together
         # po.get() will block until results are ready and then
@@ -63,8 +63,8 @@ class Command(BaseCommand):
         print("Deletion complete")
 
 
-def delete_cloudobjs(chunk):
-    """Delete from cloudfiles. Runs in a separate process."""
+def delete_cloud_objects(chunk):
+    """Delete cloud objects. Runs in a separate process."""
     container_name, cloud_objs = chunk
     conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                   user=CUMULUS["USERNAME"],

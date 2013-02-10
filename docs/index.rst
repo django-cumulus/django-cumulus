@@ -277,8 +277,7 @@ Requirements
 ************
 
 * Django>=1.2
-* python-swiftflient==1.2.0
-* python-cloudfiles==1.7.10
+* pyrax==1.2.6
 
 Tests
 *****

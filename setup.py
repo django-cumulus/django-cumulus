@@ -17,7 +17,6 @@ setup(
     packages = find_packages(),
     install_requires = [
         "pyrax==1.2.6",
-        "python-cloudfiles==1.7.10"
     ],
     author = "Rich Leland",
     author_email = "rich@richleland.com",

@@ -3,6 +3,7 @@ import fnmatch
 import mimetypes
 import optparse
 import os
+import pyrax
 import re
 import swiftclient
 
@@ -10,7 +11,6 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError, NoArgsCommand
 
-from cumulus.cloudfiles_cdn import CloudfilesCDN
 from cumulus.settings import CUMULUS
 
 
@@ -76,16 +76,15 @@ class Command(NoArgsCommand):
 
     def connect_container(self):
         """
-        Connect using the swiftclient api and the cloudfiles api.
+        Connect using the swiftclient api.
 
         The container will be created and/or made public using the
-        cloudfiles api if not already so.
+        pyrax api if not already so.
         """
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
                                            snet=CUMULUS["SERVICENET"])
-        cloudfiles_cdn = CloudfilesCDN()
         try:
             head = self.conn.head_container(self.container_name)
         except swiftclient.client.ClientException as exception:
@@ -93,8 +92,10 @@ class Command(NoArgsCommand):
                 call_command("container_create", self.container_name)
             else:
                 raise
-        if not cloudfiles_cdn.public_uri(self.container_name):
-            cloudfiles_cdn.make_public(self.container_name)
+        pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+        container = pyrax.cloudfiles.get_container(self.container_name)
+        if not container.cdn_enabled:
+            container.make_public()
         self.container = self.conn.get_container(self.container_name)
 
     def handle_noargs(self, *args, **options):

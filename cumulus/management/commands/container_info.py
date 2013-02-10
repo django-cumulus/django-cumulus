@@ -1,10 +1,9 @@
-import StringIO
 import swiftclient
 import optparse
+import pyrax
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from cumulus.cloudfiles_cdn import CloudfilesCDN
 from cumulus.settings import CUMULUS
 
 
@@ -27,7 +26,6 @@ class Command(BaseCommand):
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
                                            snet=CUMULUS["SERVICENET"])
-        self.cloudfiles_cdn = CloudfilesCDN()
 
     def handle(self, *args, **options):
         self.connect()
@@ -53,9 +51,12 @@ class Command(BaseCommand):
 
         opts = ["name", "count", "size", "uri"]
         for container_name, values in containers.iteritems():
-            uri = self.cloudfiles_cdn.public_uri(container_name)
-            if not uri:
+            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+            metadata = pyrax.cloudfiles.get_container_cdn_metadata(container_name)
+            if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
                 uri = "NOT PUBLIC"
+            else:
+                uri = metadata["x-cdn-uri"]
             info = {
                 "name": container_name,
                 "count": values["x-container-object-count"],

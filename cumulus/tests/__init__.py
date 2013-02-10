@@ -2,7 +2,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase
 
-from cumulus.cloudfiles_cdn import CloudfilesCDN
 from cumulus.settings import CUMULUS
 from cumulus.storage import SwiftclientStorage
 from cumulus.tests.models import Thing

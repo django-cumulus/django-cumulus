@@ -1,5 +1,3 @@
-import cloudfiles
-
 from django.conf import settings
 
 
@@ -25,9 +23,11 @@ if hasattr(settings, "CUMULUS"):
 if "FILTER_LIST" in settings.CUMULUS.keys():
     CUMULUS["EXCLUDE_LIST"] = CUMULUS
 
-
-# set auth_url to the actual URL string in the cloudfiles module
-CUMULUS["AUTH_URL"] = getattr(cloudfiles, CUMULUS["AUTH_URL"])
+# set the full rackspace auth_url
+if CUMULUS["AUTH_URL"] == "us_authurl":
+    CUMULUS["AUTH_URL"] = "https://auth.api.rackspacecloud.com/v1.0"
+elif CUMULUS["AUTH_URL"] == "uk_authurl":
+    CUMULUS["AUTH_URL"] = "https://lon.auth.api.rackspacecloud.com/v1.0"
 
 # backwards compatibility for old-style cumulus settings
 if not hasattr(settings, "CUMULUS"):

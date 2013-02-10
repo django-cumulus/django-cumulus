@@ -1,10 +1,10 @@
 import optparse
+import pyrax
 import swiftclient
 import sys
 
 from django.core.management.base import BaseCommand, CommandError
 
-from cumulus.cloudfiles_cdn import CloudfilesCDN
 from cumulus.settings import CUMULUS
 
 
@@ -33,7 +33,10 @@ class Command(BaseCommand):
         container_name = args[0]
         print("Creating container: {0}".format(container_name))
         self.conn.put_container(container_name)
-        cloudfiles_cdn = CloudfilesCDN()
-        if not options.get("private") and not cloudfiles_cdn.public_uri(container_name):
-            cloudfiles_cdn.make_public(container_name)
+        if not options.get("private"):
+            print("Publish container: {0}".format(container_name))
+            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+            container = pyrax.cloudfiles.get_container(container_name)
+            if not container.cdn_enabled:
+                container.make_public()
         print("Done")
