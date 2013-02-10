@@ -53,6 +53,7 @@ class SwiftclientStorage(Storage):
     default_quick_listdir = True
     api_key = CUMULUS["API_KEY"]
     auth_url = CUMULUS["AUTH_URL"]
+    region = CUMULUS["REGION"]
     connection_kwargs = {}
     container_name = CUMULUS["CONTAINER"]
     use_snet = CUMULUS["SERVICENET"]
@@ -88,12 +89,24 @@ class SwiftclientStorage(Storage):
             "connection_kwargs": self.connection_kwargs
         }
 
+    def _get_connection(self):
+        if not hasattr(self, "_connection"):
+            public = not self.use_snet  # invert
+            self._connection = pyrax.connect_to_cloudfiles(region=self.region,
+                                                           public=public)
+        return self._connection
+
+    def _set_connection(self, value):
+        self._connection = value
+
+    connection = property(_get_connection, _set_connection)
+
     def _get_container(self):
         """
         Get or create the container.
         """
         if not hasattr(self, "_container"):
-            self.container = pyrax.cloudfiles.create_container(self.container_name)
+            self.container = self.connection.create_container(self.container_name)
         return self._container
 
     def _set_container(self, container):
@@ -328,7 +341,7 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
     As long as you do not pass container or cloud objects between
     threads, you will be thread safe.
 
-    Uses one container per thread.
+    Uses one connection/container per thread.
     """
     def __init__(self, *args, **kwargs):
         super(ThreadSafeSwiftclientStorage, self).__init__(*args, **kwargs)
@@ -336,9 +349,19 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
         import threading
         self.local_cache = threading.local()
 
+    def _get_connection(self):
+        if not hasattr(self.local_cache, "connection"):
+            connection = pyrax.connect_to_cloudfiles(region=self.region,
+                                                     public=public)
+            self.local_cache.connection = connection
+
+        return self.local_cache.connection
+
+    connection = property(_get_connection, SwiftclientStorage._set_connection)
+
     def _get_container(self):
         if not hasattr(self.local_cache, "container"):
-            container = pyrax.cloudfiles.create_container(self.container_name)
+            container = self.connection.create_container(self.container_name)
             self.local_cache.container = container
 
         return self.local_cache.container

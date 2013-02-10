@@ -217,6 +217,11 @@ AUTH_URL
 
 Set this to the region your account is in. Valid values are ``us_authurl`` (default) and ``uk_authurl``.
 
+REGION
+------
+
+Set this to the regional datacenter to connect to. Valid values are ``DFW`` (default) ``ORD`` and ``LON``.
+
 CNAMES
 ------
 

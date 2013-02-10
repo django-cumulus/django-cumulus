@@ -6,19 +6,20 @@ from django.conf import settings
 CUMULUS = {
     "API_KEY": None,
     "AUTH_URL": "us_authurl",
+    "REGION": "DFW",
     "CNAMES": None,
     "CONTAINER": None,
     "CONTAINER_URI": None,
     "SERVICENET": False,
     "TIMEOUT": 5,
-    "TTL": CFClient.default_cdn_ttl,  # 86400s (24h), python-cloudfiles default
+    "TTL": CFClient.default_cdn_ttl,  # 86400s (24h), pyrax default
     "USE_SSL": False,
     "USERNAME": None,
     "STATIC_CONTAINER": None,
     "INCLUDE_LIST": [],
     "EXCLUDE_LIST": [],
-    'HEADERS': {},
-    'GZIP_CONTENT_TYPES': [],
+    "HEADERS": {},
+    "GZIP_CONTENT_TYPES": [],
 }
 
 if hasattr(settings, "CUMULUS"):
@@ -34,7 +35,7 @@ elif CUMULUS["AUTH_URL"] == "uk_authurl":
     CUMULUS["AUTH_URL"] = "https://lon.auth.api.rackspacecloud.com/v1.0"
 
 # backwards compatibility for old-style cumulus settings
-if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
+if not hasattr(settings, "CUMULUS") and hasattr(settings, "CUMULUS_API_KEY"):
     import warnings
     warnings.warn(
         "settings.CUMULUS_* is deprecated; use settings.CUMULUS instead.",
@@ -44,6 +45,7 @@ if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
     CUMULUS.update({
         "API_KEY": getattr(settings, "CUMULUS_API_KEY"),
         "AUTH_URL": getattr(settings, "AUTH_URL", "us_authurl"),
+        "REGION": getattr(settings, "REGION", "DFW"),
         "CNAMES": getattr(settings, "CUMULUS_CNAMES", None),
         "CONTAINER": getattr(settings, "CUMULUS_CONTAINER"),
         "SERVICENET": getattr(settings, "CUMULUS_USE_SERVICENET", False),

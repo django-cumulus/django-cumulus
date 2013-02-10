@@ -52,7 +52,10 @@ class Command(BaseCommand):
         opts = ["name", "count", "size", "uri"]
         for container_name, values in containers.iteritems():
             pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            metadata = pyrax.cloudfiles.get_container_cdn_metadata(container_name)
+            public = not CUMULUS["SERVICENET"]
+            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                     public=public)
+            metadata = connection.get_container_cdn_metadata(container_name)
             if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
                 uri = "NOT PUBLIC"
             else:

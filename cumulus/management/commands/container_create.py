@@ -36,7 +36,10 @@ class Command(BaseCommand):
         if not options.get("private"):
             print("Publish container: {0}".format(container_name))
             pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            container = pyrax.cloudfiles.get_container(container_name)
+            public = not CUMULUS["SERVICENET"]
+            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                     public=public)
+            container = connection.get_container(container_name)
             if not container.cdn_enabled:
                 container.make_public(ttl=CUMULUS["TTL"])
         print("Done")

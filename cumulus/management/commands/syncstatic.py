@@ -99,7 +99,10 @@ class Command(NoArgsCommand):
             else:
                 raise
         pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-        container = pyrax.cloudfiles.get_container(self.container_name)
+        public = not CUMULUS["SERVICENET"]
+        connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                 public=public)
+        container = connection.get_container(self.container_name)
         if not container.cdn_enabled:
             container.make_public(ttl=CUMULUS["TTL"])
         self.container = self.conn.get_container(self.container_name)
