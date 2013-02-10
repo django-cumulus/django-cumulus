@@ -36,9 +36,9 @@ class CumulusTests(TestCase):
         self.custom = SimpleUploadedFile("custom.txt", "custom type", content_type="custom/type")
         self.thing = Thing.objects.create(image=self.image, document=self.document, custom=self.custom)
         pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-        public = not CUMULUS["SERVICENET"]  # invert
+        self.public = not CUMULUS["SERVICENET"]  # invert
         self.connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                      public=public)
+                                                      public=self.public)
         self.container = self.connection.get_container(CUMULUS["CONTAINER"])
 
     def tearDown(self):
@@ -84,3 +84,14 @@ class CumulusTests(TestCase):
         cloud_custom = openstack_storage.container.get_object(
             self.thing.custom.name)
         self.assertEqual(cloud_custom.content_type, "custom/type")
+
+    def test_custom_region(self):
+        "Ensure that the region option works properly"
+        self.ord_connection = pyrax.connect_to_cloudfiles(region="ORD",
+                                                          public=self.public)
+        name = "{0}-ORD".format(CUMULUS["CONTAINER"])
+        self.ord_container = self.ord_connection.create_container(name)
+        self.assertTrue(self.ord_connection.get_container(name))
+        self.ord_connection.delete_container(name)
+        self.assertFalse([c.name for c in self.ord_connection.get_all_containers()
+                          if c.name == name])
