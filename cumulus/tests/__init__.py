@@ -1,3 +1,5 @@
+import pyrax
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase
@@ -33,6 +35,11 @@ class CumulusTests(TestCase):
         self.document = SimpleUploadedFile("test.txt", "test content")
         self.custom = SimpleUploadedFile("custom.txt", "custom type", content_type="custom/type")
         self.thing = Thing.objects.create(image=self.image, document=self.document, custom=self.custom)
+        pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+        public = not CUMULUS["SERVICENET"]  # invert
+        self.connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                      public=public)
+        self.container = self.connection.get_container(CUMULUS["CONTAINER"])
 
     def tearDown(self):
         self.thing.delete()
@@ -42,18 +49,23 @@ class CumulusTests(TestCase):
         self.assertEqual(self.thing.image.width, 1)
         self.assertEqual(self.thing.image.height, 1)
         self.assertEqual(self.thing.image.size, 695)
-
         self.assertTrue("rackcdn.com" in self.thing.image.url,
                         "URL is not a valid Cloud Files CDN URL.")
 
         self.assertEqual(self.thing.document.size, 12)
         self.assertTrue("rackcdn.com" in self.thing.document.url,
                         "URL is not a valid Cloud Files CDN URL.")
-        # TODO test ssl and cname urls
-        # TODO test servicenet
-        # TODO test auth_url
-        # TODO connection kwargs?
-        # TODO headers?
+
+        CUMULUS["CONTAINER_URI"] = "http://media.mysite.com"
+        self.assertTrue(self.thing.image.url.startswith(
+            "http://media.mysite.com/cumulus-tests/"))
+
+        CUMULUS["CONTAINER_URI"] = None
+        CUMULUS["CNAMES"] = {
+            self.container.cdn_uri: "http://media.myothersite.com"
+        }
+        self.assertTrue(self.thing.image.url.startswith(
+            "http://media.myothersite.com/cumulus-tests/"))
 
     def test_image_content_type(self):
         "Ensure content type is set properly for the uploaded image."

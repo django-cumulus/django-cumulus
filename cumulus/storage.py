@@ -132,7 +132,7 @@ class SwiftclientStorage(Storage):
         else:
             self._container_public_uri = self.container.cdn_uri
         if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
-            self._container_public_uri = CUMULUS["CNAMES"][container_public_uri]
+            self._container_public_uri = CUMULUS["CNAMES"][self._container_public_uri]
         return self._container_public_uri
 
     container_url = property(_get_container_url)
