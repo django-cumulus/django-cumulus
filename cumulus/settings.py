@@ -1,3 +1,5 @@
+from pyrax.cf_wrapper.client import CFClient
+
 from django.conf import settings
 
 
@@ -9,12 +11,14 @@ CUMULUS = {
     "CONTAINER_URI": None,
     "SERVICENET": False,
     "TIMEOUT": 5,
-    "TTL": 600,
+    'TTL': CFClient.default_cdn_ttl,  # 86400s (24h), python-cloudfiles default
     "USE_SSL": False,
     "USERNAME": None,
     "STATIC_CONTAINER": None,
     "INCLUDE_LIST": [],
     "EXCLUDE_LIST": [],
+    'HEADERS': {},
+    'GZIP_CONTENT_TYPES': [],
 }
 
 if hasattr(settings, "CUMULUS"):
@@ -30,7 +34,7 @@ elif CUMULUS["AUTH_URL"] == "uk_authurl":
     CUMULUS["AUTH_URL"] = "https://lon.auth.api.rackspacecloud.com/v1.0"
 
 # backwards compatibility for old-style cumulus settings
-if not hasattr(settings, "CUMULUS"):
+if not hasattr(settings, 'CUMULUS') and hasattr(settings, 'CUMULUS_API_KEY'):
     import warnings
     warnings.warn(
         "settings.CUMULUS_* is deprecated; use settings.CUMULUS instead.",
@@ -44,6 +48,6 @@ if not hasattr(settings, "CUMULUS"):
         "CONTAINER": getattr(settings, "CUMULUS_CONTAINER"),
         "SERVICENET": getattr(settings, "CUMULUS_USE_SERVICENET", False),
         "TIMEOUT": getattr(settings, "CUMULUS_TIMEOUT", 5),
-        "TTL": getattr(settings, "CUMULUS_TTL", 600),
+        "TTL": getattr(settings, "CUMULUS_TTL", CFClient.default_cdn_ttl),
         "USERNAME": getattr(settings, "CUMULUS_USERNAME"),
     })

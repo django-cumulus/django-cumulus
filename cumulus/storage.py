@@ -70,7 +70,7 @@ class SwiftclientStorage(Storage):
             self._container_public_uri = self.container.cdn_ssl_uri
         elif CUMULUS["CONTAINER_URI"]:
             self._container_public_uri = CUMULUS["CONTAINER_URI"]
-        else:
+            else:
             self._container_public_uri = self.container.cdn_uri
         if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
             self._container_public_uri = CUMULUS["CNAMES"][container_public_uri]
@@ -85,7 +85,7 @@ class SwiftclientStorage(Storage):
         if name not in self.container.get_object_names():
             return False
         else:
-            return self.container.get_object(name)
+        return self.container.get_object(name)
 
     def _open(self, name, mode="rb"):
         """
@@ -162,7 +162,7 @@ class SwiftclientStorage(Storage):
         path_len = len(path)
         for name in self.container.get_object_names():
             if name.startswith(path):
-                files.append(name[path_len:])
+            files.append(name[path_len:])
         return ([], files)
 
     def full_listdir(self, path):
@@ -178,20 +178,20 @@ class SwiftclientStorage(Storage):
         path_len = len(path)
         for name in self.container.get_object_names():
             if name.startswith(path):
-                name = name[path_len:]
+            name = name[path_len:]
                 slash = name[1:-1].find("/") + 1
-                if slash:
-                    dirs.add(name[:slash])
+            if slash:
+                dirs.add(name[:slash])
                     files.append(name[slash + 1:])
                 else:
-                    files.append(name)
+                files.append(name)
         dirs = list(dirs)
         dirs.sort()
         return (dirs, files)
 
 
 class SwiftclientStaticStorage(SwiftclientStorage):
-    """
+        """
     Subclasses SwiftclientStorage to automatically set the container
     to the one specified in CUMULUS["STATIC_CONTAINER"]. This provides
     the ability to specify a separate storage backend for Django's
@@ -214,7 +214,7 @@ class SwiftclientStorageFile(File):
         self._storage = storage
         self._pos = 0
         super(SwiftclientStorageFile, self).__init__(file=None, name=name,
-                                                     *args, **kwargs)
+                                                    *args, **kwargs)
 
     def _get_pos(self):
         return self._pos

@@ -198,7 +198,7 @@ Below are the default settings::
         'CONTAINER': None,
         'SERVICENET': False,
         'TIMEOUT': 5,
-        'TTL': 600,
+        'TTL': 86400,
         'USE_SSL': False,
         'USERNAME': None,
         'STATIC_CONTAINER': None,
@@ -259,7 +259,9 @@ The timeout to use when attempting connections over swiftclient. Defaults to 5 (
 TTL
 ---
 
-Currently unused.
+The maximum time (in seconds) until a copy of one of your files distributed into the CDN is re-fetched from your container. Defaults to 86400 (seconds) (24h), the default set by python-cloudfiles.
+
+Note: After changing TTL, caching servers may not recognize the new TTL for this container until the previous TTL expires.
 
 USE_SSL
 -------
@@ -272,6 +274,20 @@ USERNAME
 **Required.** This is your API username. You can obtain it from the `Rackspace Management Console`_.
 
 .. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
+
+HEADERS
+-------
+
+Set headers based on a regular expression in the file name. This can be used to allow Firefox to
+access webfonts across domains::
+
+   CUMULUS = {
+       'HEADERS': (
+           (r'.*\.(eot|otf|woff|ttf)$', {
+               'Access-Control-Allow-Origin': '*'
+           }),
+       )
+   }
 
 Requirements
 ************

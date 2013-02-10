@@ -12,6 +12,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError, NoArgsCommand
 
 from cumulus.settings import CUMULUS
+from cumulus.storage import sync_headers
 
 
 class Command(NoArgsCommand):
@@ -33,7 +34,10 @@ class Command(NoArgsCommand):
             help="Performs a test run of the sync."),
         optparse.make_option("-q", "--quiet",
             action="store_true", dest="test_run", default=False,
-            help="Do not display any output."))
+            help="Do not display any output."),
+        optparse.make_option('-c', '--container',
+            dest='container', help="Override STATIC_CONTAINER."),
+    )
 
     def set_options(self, options):
         """
@@ -43,6 +47,8 @@ class Command(NoArgsCommand):
         self.wipe = options.get("wipe")
         self.test_run = options.get("test_run")
         self.quiet = options.get("test_run")
+        if "container" in options:
+            self.STATIC_CONTAINER = options.get("container")
         self.verbosity = int(options.get("verbosity"))
         if self.test_run:
             self.verbosity = 2
@@ -207,6 +213,7 @@ class Command(NoArgsCommand):
                                  etag=None,
                                  content_type=mime_type,
                                  headers=None)
+            sync_headers(cloud_obj)
         self.create_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
