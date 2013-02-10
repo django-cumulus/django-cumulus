@@ -1,15 +1,10 @@
 import mimetypes
-import os
 import pyrax
-import StringIO
-import swiftclient
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import Storage
-from django.core.management import call_command
 
-from cumulus.cloudfiles_cdn import CloudfilesCDN
 from cumulus.settings import CUMULUS
 
 
@@ -113,7 +108,7 @@ class SwiftclientStorage(Storage):
         """
         try:
             self.container.delete_object(name)
-        except swiftclient.client.ClientException, exc:
+        except pyrax.exceptions.ClientException, exc:
             if exc.http_status == 404:
                 pass
             else:
