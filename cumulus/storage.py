@@ -27,8 +27,6 @@ class SwiftclientStorage(Storage):
         self.container_name = container or CUMULUS["CONTAINER"]
         self.use_snet = CUMULUS["SERVICENET"]
         self.use_ssl = CUMULUS["USE_SSL"]
-        self.container = self.get_or_create_container()
-        self.container_public_uri = self.get_container_uri()
 
     def __getstate__(self):
         """
@@ -42,30 +40,45 @@ class SwiftclientStorage(Storage):
             "connection_kwargs": self.connection_kwargs
         }
 
-    def get_or_create_container(self):
+    def _get_container(self):
         """
-        Get the container, creating and/or making it publicly available if
-        it is not already.
+        Get or create the container.
         """
-        container = pyrax.cloudfiles.create_container(self.container_name)
+        if not hasattr(self, "_container"):
+            self.container = pyrax.cloudfiles.create_container(self.container_name)
+        return self._container
+
+    def _set_container(self, container):
+        """
+        Set the container (and, if needed, the configured TTL on it), making
+        the container publicly available.
+        """
         if not container.cdn_enabled:
             container.make_public()
-        return container
+        # if container.cdn_ttl != self.ttl or not container.is_public():
+        #     container.make_public(ttl=self.ttl)
+        if hasattr(self, "_container_public_uri"):
+            delattr(self, "_container_public_uri")
+        self._container = container
 
-    def get_container_uri(self):
+    container = property(_get_container, _set_container)
+
+    def _get_container_url(self):
         if self.use_ssl and CUMULUS["CONTAINER_SSL_URI"]:
-            container_public_uri = CUMULUS["CONTAINER_SSL_URI"]
+            self._container_public_uri = CUMULUS["CONTAINER_SSL_URI"]
         elif self.use_ssl:
-            container_public_uri = self.container.cdn_ssl_uri
+            self._container_public_uri = self.container.cdn_ssl_uri
         elif CUMULUS["CONTAINER_URI"]:
-            container_public_uri = CUMULUS["CONTAINER_URI"]
+            self._container_public_uri = CUMULUS["CONTAINER_URI"]
         else:
-            container_public_uri = self.container.cdn_uri
-        if CUMULUS["CNAMES"] and container_public_uri in CUMULUS["CNAMES"]:
-            container_public_uri = CUMULUS["CNAMES"][container_public_uri]
-        return container_public_uri
+            self._container_public_uri = self.container.cdn_uri
+        if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
+            self._container_public_uri = CUMULUS["CNAMES"][container_public_uri]
+        return self._container_public_uri
 
-    def _get_cloud_obj(self, name):
+    container_url = property(_get_container_url)
+
+    def _get_object(self, name):
         """
         Helper function to retrieve the requested Cloud Files Object.
         """
@@ -120,20 +133,20 @@ class SwiftclientStorage(Storage):
         exists in the storage system, or False if the name is
         available for a new file.
         """
-        return bool(self._get_cloud_obj(name))
+        return bool(self._get_object(name))
 
     def size(self, name):
         """
         Returns the total size, in bytes, of the file specified by name.
         """
-        return self._get_cloud_obj(name).total_bytes
+        return self._get_object(name).total_bytes
 
     def url(self, name):
         """
         Returns an absolute URL where the content of each file can be
         accessed directly by a web browser.
         """
-        return "{0}/{1}".format(self.container_public_uri, name)
+        return "{0}/{1}".format(self.container_url, name)
 
     def listdir(self, path):
         """
@@ -147,7 +160,7 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in self.container.get_cloud_objs_names():
+        for name in self.container.get_object_names():
             if name.startswith(path):
                 files.append(name[path_len:])
         return ([], files)
@@ -163,7 +176,7 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in self.container.get_cloud_objs_names():
+        for name in self.container.get_object_names():
             if name.startswith(path):
                 name = name[path_len:]
                 slash = name[1:-1].find("/") + 1
@@ -218,7 +231,7 @@ class SwiftclientStorageFile(File):
 
     def _get_file(self):
         if not hasattr(self, "_file"):
-            self._file = self._storage._get_cloud_obj(self.name)
+            self._file = self._storage._get_object(self.name)
             self._file.tell = self._get_pos
         return self._file
 
@@ -262,7 +275,7 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
     As long as you do not pass container or cloud objects between
     threads, you will be thread safe.
 
-    Uses one cloudfiles connection per thread.
+    Uses one container per thread.
     """
     def __init__(self, *args, **kwargs):
         super(ThreadSafeSwiftclientStorage, self).__init__(*args, **kwargs)
@@ -270,17 +283,11 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
         import threading
         self.local_cache = threading.local()
 
-    def _get_connection(self):
-        if not hasattr(self.local_cache, "connection"):
-            connection = cloudfiles.get_connection(self.username,
-                                    self.api_key, **self.connection_kwargs)
-            self.local_cache.connection = connection
-
-        return self.local_cache.connection
-
     def _get_container(self):
         if not hasattr(self.local_cache, "container"):
             container = pyrax.cloudfiles.create_container(self.container_name)
             self.local_cache.container = container
 
         return self.local_cache.container
+
+    container = property(_get_container, SwiftclientStorage._set_container)
