@@ -14,7 +14,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'dev.db',                      # Or path to database file if using sqlite3.
+        'NAME': ':memory:',              # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -152,21 +152,28 @@ LOGGING = {
 }
 
 DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
-STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'
+#STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
     'API_KEY': None,
     'AUTH_URL': 'us_authurl',
+    'REGION': 'DFW',
     'CNAMES': None,
-    'CONTAINER': None,
+    'CONTAINER': 'cumulus-content-tests',
+    'CONTAINER_URI': None,
+    'CONTAINER_SSL_URI': None,
+    'STATIC_CONTAINER': 'cumulus-static-tests',
     'SERVICENET': False,
     'TIMEOUT': 5,
     'TTL': 600,
     'USE_SSL': False,
     'USERNAME': None,
     'STATIC_CONTAINER': None,
-    'FILTER_LIST': []
+    'INCLUDE_LIST': [],
+    'EXCLUDE_LIST': [],
+    'HEADERS': {},
+    'GZIP_CONTENT_TYPES': [],
 }
 
 try:
