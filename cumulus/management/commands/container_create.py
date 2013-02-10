@@ -38,5 +38,5 @@ class Command(BaseCommand):
             pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
             container = pyrax.cloudfiles.get_container(container_name)
             if not container.cdn_enabled:
-                container.make_public()
+                container.make_public(ttl=CUMULUS["TTL"])
         print("Done")
