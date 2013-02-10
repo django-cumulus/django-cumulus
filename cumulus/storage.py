@@ -1,11 +1,49 @@
 import mimetypes
 import pyrax
 
+from gzip import GzipFile
+from StringIO import StringIO
+
 from django.conf import settings
-from django.core.files import File
+from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
 from cumulus.settings import CUMULUS
+
+
+HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get("HEADERS", {}))
+
+
+def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
+    """
+    Overwrite the given cloud_obj's headers with the ones given as ``headers`
+    and add additional headers as defined in the HEADERS setting depending on
+    the cloud_obj's file name.
+    """
+    # don't set headers on directories
+    content_type = getattr(cloud_obj, "content_type", None)
+    if content_type == "application/directory":
+        return
+    matched_headers = {}
+    for pattern, pattern_headers in header_patterns:
+        if pattern.match(cloud_obj.name):
+            matched_headers.update(pattern_headers.copy())
+    matched_headers.update(cloud_obj.headers)  # preserve headers already set
+    matched_headers.update(headers)  # explicitly set headers overwrite matches and already set headers
+    if matched_headers != cloud_obj.headers:
+        cloud_obj.headers = matched_headers
+        cloud_obj.sync_metadata()
+
+
+def get_gzipped_contents(input_file):
+    """
+    Return a gzipped version of a previously opened file's buffer.
+    """
+    zbuf = StringIO()
+    zfile = GzipFile(mode="wb", compresslevel=6, fileobj=zbuf)
+    zfile.write(input_file.read())
+    zfile.close()
+    return ContentFile(zbuf.getvalue())
 
 
 class SwiftclientStorage(Storage):
@@ -13,20 +51,30 @@ class SwiftclientStorage(Storage):
     Custom storage for Swiftclient.
     """
     default_quick_listdir = True
+    api_key = CUMULUS["API_KEY"]
+    auth_url = CUMULUS["AUTH_URL"]
+    connection_kwargs = {}
+    container_name = CUMULUS["CONTAINER"]
+    use_snet = CUMULUS["SERVICENET"]
+    username = CUMULUS["USERNAME"]
+    ttl = CUMULUS["TTL"]
+    use_ssl = CUMULUS["USE_SSL"]
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None):
         """
         Initialize the settings for the connection and container.
         """
-        api_key = api_key or CUMULUS["API_KEY"]
-        username = username or CUMULUS["USERNAME"]
-        pyrax.set_credentials(username, api_key)
-        # self.auth_url = CUMULUS["AUTH_URL"]
-        # self.connection_kwargs = connection_kwargs or {}
-        self.container_name = container or CUMULUS["CONTAINER"]
-        self.use_snet = CUMULUS["SERVICENET"]
-        self.use_ssl = CUMULUS["USE_SSL"]
+        if username is not None:
+            self.username = username
+        if api_key is not None:
+            self.api_key = api_key
+        if container is not None:
+            self.container_name = container
+        if connection_kwargs is not None:
+            self.connection_kwargs = connection_kwargs
+        # connect
+        pyrax.set_credentials(self.username, self.api_key)
 
     def __getstate__(self):
         """
@@ -53,10 +101,8 @@ class SwiftclientStorage(Storage):
         Set the container (and, if needed, the configured TTL on it), making
         the container publicly available.
         """
-        if not container.cdn_enabled:
-            container.make_public()
-        # if container.cdn_ttl != self.ttl or not container.is_public():
-        #     container.make_public(ttl=self.ttl)
+        if container.cdn_ttl != self.ttl or not container.cdn_enabled:
+            container.make_public(ttl=self.ttl)
         if hasattr(self, "_container_public_uri"):
             delattr(self, "_container_public_uri")
         self._container = container
@@ -70,7 +116,7 @@ class SwiftclientStorage(Storage):
             self._container_public_uri = self.container.cdn_ssl_uri
         elif CUMULUS["CONTAINER_URI"]:
             self._container_public_uri = CUMULUS["CONTAINER_URI"]
-            else:
+        else:
             self._container_public_uri = self.container.cdn_uri
         if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
             self._container_public_uri = CUMULUS["CNAMES"][container_public_uri]
@@ -85,7 +131,7 @@ class SwiftclientStorage(Storage):
         if name not in self.container.get_object_names():
             return False
         else:
-        return self.container.get_object(name)
+            return self.container.get_object(name)
 
     def _open(self, name, mode="rb"):
         """
@@ -105,11 +151,24 @@ class SwiftclientStorage(Storage):
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             content_type = mime_type
+
+        # gzip the file if its of the right content type
+        if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
+            # TODO: figure out how to set headers via swiftclient
+            if hasattr(cloud_obj, "headers"):
+                content = get_gzipped_contents(content)
+                cloud_obj.headers["Content-Encoding"] = "gzip"
+            else:
+                print("Warning: will not compress any files due to missing "
+                      "custom header support.")
+
         if name not in self.container.get_object_names():
             self.container.store_object(obj_name=name,
                                         data=content.read(),
                                         content_type=content_type,
                                         etag=None)
+        # TODO sync headers
+        # sync_headers(cloud_obj)
         return name
 
     def delete(self, name):
@@ -161,7 +220,6 @@ class SwiftclientStorage(Storage):
             path = "{0}/".format(path)
         path_len = len(path)
         for name in self.container.get_object_names():
-            if name.startswith(path):
             files.append(name[path_len:])
         return ([], files)
 
@@ -177,13 +235,11 @@ class SwiftclientStorage(Storage):
             path = "{0}/".format(path)
         path_len = len(path)
         for name in self.container.get_object_names():
-            if name.startswith(path):
             name = name[path_len:]
-                slash = name[1:-1].find("/") + 1
+            slash = name[1:-1].find("/") + 1
             if slash:
                 dirs.add(name[:slash])
-                    files.append(name[slash + 1:])
-                else:
+            elif name:
                 files.append(name)
         dirs = list(dirs)
         dirs.sort()
@@ -191,7 +247,7 @@ class SwiftclientStorage(Storage):
 
 
 class SwiftclientStaticStorage(SwiftclientStorage):
-        """
+    """
     Subclasses SwiftclientStorage to automatically set the container
     to the one specified in CUMULUS["STATIC_CONTAINER"]. This provides
     the ability to specify a separate storage backend for Django's
@@ -201,10 +257,7 @@ class SwiftclientStaticStorage(SwiftclientStorage):
     than CUMULUS["CONTAINER"]. Then, tell Django's staticfiles app by setting
     STATICFILES_STORAGE = "cumulus.storage.SwiftclientStaticStorage".
     """
-    def __init__(self, *args, **kwargs):
-        if not "container" in kwargs:
-            kwargs["container"] = CUMULUS["STATIC_CONTAINER"]
-        super(SwiftclientStaticStorage, self).__init__(*args, **kwargs)
+    container_name = CUMULUS["STATIC_CONTAINER"]
 
 
 class SwiftclientStorageFile(File):

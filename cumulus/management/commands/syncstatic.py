@@ -35,8 +35,8 @@ class Command(NoArgsCommand):
         optparse.make_option("-q", "--quiet",
             action="store_true", dest="test_run", default=False,
             help="Do not display any output."),
-        optparse.make_option('-c', '--container',
-            dest='container', help="Override STATIC_CONTAINER."),
+        optparse.make_option("-c", "--container",
+            dest="container", help="Override STATIC_CONTAINER."),
     )
 
     def set_options(self, options):
@@ -47,8 +47,7 @@ class Command(NoArgsCommand):
         self.wipe = options.get("wipe")
         self.test_run = options.get("test_run")
         self.quiet = options.get("test_run")
-        if "container" in options:
-            self.STATIC_CONTAINER = options.get("container")
+        self.container_name = options.get("container")
         self.verbosity = int(options.get("verbosity"))
         if self.test_run:
             self.verbosity = 2
@@ -56,7 +55,8 @@ class Command(NoArgsCommand):
         cli_excludes = options.get("excludes")
 
         # CUMULUS CONNECTION AND SETTINGS FROM SETTINGS.PY
-        self.container_name = CUMULUS["STATIC_CONTAINER"]
+        if not self.container_name:
+            self.container_name = CUMULUS["STATIC_CONTAINER"]
         settings_includes = CUMULUS["INCLUDE_LIST"]
         settings_excludes = CUMULUS["EXCLUDE_LIST"]
 
@@ -213,7 +213,8 @@ class Command(NoArgsCommand):
                                  etag=None,
                                  content_type=mime_type,
                                  headers=None)
-            sync_headers(cloud_obj)
+            # TODO syncheaders
+            #sync_headers(cloud_obj)
         self.create_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
