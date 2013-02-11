@@ -155,7 +155,7 @@ class SwiftclientStorage(Storage):
 
     def _get_object(self, name):
         """
-        Helper function to retrieve the requested Cloud Files Object.
+        Helper function to retrieve the requested Object.
         """
         if name not in self.container.get_object_names():
             return False
