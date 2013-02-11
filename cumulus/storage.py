@@ -1,5 +1,6 @@
 import mimetypes
 import pyrax
+import swiftclient
 
 from gzip import GzipFile
 from StringIO import StringIO
@@ -9,7 +10,6 @@ from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
 from cumulus.settings import CUMULUS
-
 
 HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get("HEADERS", {}))
 
@@ -60,7 +60,7 @@ class SwiftclientStorage(Storage):
     username = CUMULUS["USERNAME"]
     ttl = CUMULUS["TTL"]
     use_ssl = CUMULUS["USE_SSL"]
-    use_swift = CUMULUS["USE_SWIFT_BACKEND"]
+    use_pyrax = CUMULUS["USE_PYRAX"]
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None):
@@ -76,7 +76,8 @@ class SwiftclientStorage(Storage):
         if connection_kwargs is not None:
             self.connection_kwargs = connection_kwargs
         # connect
-        pyrax.set_credentials(self.username, self.api_key)
+        if CUMULUS["USE_PYRAX"]:
+            pyrax.set_credentials(self.username, self.api_key)
 
     def __getstate__(self):
         """
@@ -93,8 +94,18 @@ class SwiftclientStorage(Storage):
     def _get_connection(self):
         if not hasattr(self, "_connection"):
             public = not self.use_snet  # invert
-            self._connection = pyrax.connect_to_cloudfiles(region=self.region,
-                                                           public=public)
+            if CUMULUS["USE_PYRAX"]:
+                self._connection = pyrax.connect_to_cloudfiles(region=self.region,
+                                                               public=public)
+            else:
+                self._connection = swiftclient.Connection(
+                    authurl=CUMULUS["AUTH_URL"],
+                    user=CUMULUS["USERNAME"],
+                    key=CUMULUS["API_KEY"],
+                    snet=CUMULUS["SERVICENET"],
+                    auth_version=CUMULUS["AUTH_VERSION"],
+                    tenant_name=CUMULUS["AUTH_TENANT_NAME"]
+                )
         return self._connection
 
     def _set_connection(self, value):
@@ -107,7 +118,10 @@ class SwiftclientStorage(Storage):
         Get or create the container.
         """
         if not hasattr(self, "_container"):
-            self.container = self.connection.create_container(self.container_name)
+            if CUMULUS["USE_PYRAX"]:
+                self.container = self.connection.put_container(self.container_name)
+            else:
+                self._container = None
         return self._container
 
     def _set_container(self, container):
@@ -115,10 +129,11 @@ class SwiftclientStorage(Storage):
         Set the container (and, if needed, the configured TTL on it), making
         the container publicly available.
         """
-        if container.cdn_ttl != self.ttl or not container.cdn_enabled:
-            container.make_public(ttl=self.ttl)
-        if hasattr(self, "_container_public_uri"):
-            delattr(self, "_container_public_uri")
+        if CUMULUS["USE_PYRAX"]:
+            if container.cdn_ttl != self.ttl or not container.cdn_enabled:
+                container.make_public(ttl=self.ttl)
+            if hasattr(self, "_container_public_uri"):
+                delattr(self, "_container_public_uri")
         self._container = container
 
     container = property(_get_container, _set_container)
@@ -165,24 +180,16 @@ class SwiftclientStorage(Storage):
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             content_type = mime_type
-
+        
+        headers = { "Content-Type": content_type }
+        
         # gzip the file if its of the right content type
         if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-            # TODO: figure out how to set headers via swiftclient
-            if hasattr(cloud_obj, "headers"):
-                content = get_gzipped_contents(content)
-                cloud_obj.headers["Content-Encoding"] = "gzip"
-            else:
-                print("Warning: will not compress any files due to missing "
-                      "custom header support.")
-
-        if name not in self.container.get_object_names():
-            self.container.store_object(obj_name=name,
-                                        data=content.read(),
-                                        content_type=content_type,
-                                        etag=None)
-        # TODO sync headers
-        # sync_headers(cloud_obj)
+            content = get_gzipped_contents(content)
+            headers["Content-Encoding"] = "gzip"
+        
+        self.connection.put_object(self.container_name, name, content, headers=headers)
+        
         return name
 
     def delete(self, name):
@@ -193,7 +200,7 @@ class SwiftclientStorage(Storage):
         https://docs.djangoproject.com/en/1.3/releases/1.3/#deleting-a-model-doesn-t-delete-associated-files
         """
         try:
-            self.container.delete_object(name)
+            self.connection.delete_object(self.container_name, name)
         except pyrax.exceptions.ClientException, exc:
             if exc.http_status == 404:
                 pass
@@ -233,7 +240,7 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in self.container.get_object_names():
+        for name in [x['name'] for x in self.connection.get_container(self.container_name, full_listing=True)[1]]:
             files.append(name[path_len:])
         return ([], files)
 
@@ -248,7 +255,7 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in self.container.get_object_names():
+        for name in [x['name'] for x in self.connection.get_container(self.container_name, full_listing=True)[1]]:
             name = name[path_len:]
             slash = name[1:-1].find("/") + 1
             if slash:
