@@ -24,7 +24,9 @@ class Command(BaseCommand):
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"])
+                                           snet=CUMULUS["SERVICENET"],
+                                           auth_version=CUMULUS["AUTH_VERSION"],
+                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
 
     def handle(self, *args, **options):
         if len(args) != 1:
@@ -35,11 +37,14 @@ class Command(BaseCommand):
         self.conn.put_container(container_name)
         if not options.get("private"):
             print("Publish container: {0}".format(container_name))
-            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            public = not CUMULUS["SERVICENET"]
-            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                     public=public)
-            container = connection.get_container(container_name)
-            if not container.cdn_enabled:
-                container.make_public(ttl=CUMULUS["TTL"])
+            if CUMULUS["USE_PYRAX"]:
+                pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+                public = not CUMULUS["SERVICENET"]
+                connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                         public=public)
+                container = connection.get_container(container_name)
+                if not container.cdn_enabled:
+                    container.make_public(ttl=CUMULUS["TTL"])
+            else:
+                self.conn.post_container(container_name, headers={"X-Container-Read":".r:*"})
         print("Done")

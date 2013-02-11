@@ -19,7 +19,9 @@ class Command(BaseCommand):
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"])
+                                           snet=CUMULUS["SERVICENET"],
+                                           auth_version=CUMULUS["AUTH_VERSION"],
+                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
 
     def handle(self, *args, **options):
         """

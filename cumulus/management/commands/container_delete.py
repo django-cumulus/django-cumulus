@@ -29,7 +29,9 @@ class Command(BaseCommand):
         conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                       user=CUMULUS["USERNAME"],
                                       key=CUMULUS["API_KEY"],
-                                      snet=CUMULUS["SERVICENET"])
+                                      snet=CUMULUS["SERVICENET"],
+                                      auth_version=CUMULUS["AUTH_VERSION"],
+                                      tenant_name=CUMULUS["AUTH_TENANT_NAME"])
 
         print("Connecting")
         container = conn.get_container(container_name)
@@ -69,7 +71,9 @@ def delete_cloud_objects(chunk):
     conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                   user=CUMULUS["USERNAME"],
                                   key=CUMULUS["API_KEY"],
-                                  snet=CUMULUS["SERVICENET"])
+                                  snet=CUMULUS["SERVICENET"],
+                                  auth_version=CUMULUS["AUTH_VERSION"],
+                                  tenant_name=CUMULUS["AUTH_TENANT_NAME"])
     filter(None, cloud_objs)
     deleted = []
     for cloud_obj in cloud_objs:

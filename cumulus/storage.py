@@ -60,6 +60,7 @@ class SwiftclientStorage(Storage):
     username = CUMULUS["USERNAME"]
     ttl = CUMULUS["TTL"]
     use_ssl = CUMULUS["USE_SSL"]
+    use_swift = CUMULUS["USE_SWIFT_BACKEND"]
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None):

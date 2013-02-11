@@ -90,7 +90,9 @@ class Command(NoArgsCommand):
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"])
+                                           snet=CUMULUS["SERVICENET"],
+                                           auth_version=CUMULUS["AUTH_VERSION"],
+                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
         try:
             head = self.conn.head_container(self.container_name)
         except swiftclient.client.ClientException as exception:
@@ -98,13 +100,18 @@ class Command(NoArgsCommand):
                 call_command("container_create", self.container_name)
             else:
                 raise
-        pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-        public = not CUMULUS["SERVICENET"]
-        connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+        
+        if CUMULUS["USE_PYRAX"]:
+            public = not CUMULUS["SERVICENET"]
+            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                  public=public)
-        container = connection.get_container(self.container_name)
-        if not container.cdn_enabled:
-            container.make_public(ttl=CUMULUS["TTL"])
+            container = connection.get_container(self.container_name)
+            if not container.cdn_enabled:
+                container.make_public(ttl=CUMULUS["TTL"])
+        else:
+            self.conn.post_container(self.container_name, headers={"X-Container-Read":".r:*"})
+        
         self.container = self.conn.get_container(self.container_name)
 
     def handle_noargs(self, *args, **options):

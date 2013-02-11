@@ -25,7 +25,9 @@ class Command(BaseCommand):
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"])
+                                           snet=CUMULUS["SERVICENET"],
+                                           auth_version=CUMULUS["AUTH_VERSION"],
+                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
 
     def handle(self, *args, **options):
         self.connect()
@@ -51,22 +53,27 @@ class Command(BaseCommand):
 
         opts = ["name", "count", "size", "uri"]
         for container_name, values in containers.iteritems():
-            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            public = not CUMULUS["SERVICENET"]
-            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                     public=public)
-            metadata = connection.get_container_cdn_metadata(container_name)
-            if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
-                uri = "NOT PUBLIC"
+            if CUMULUS["USE_PYRAX"]:
+                pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+                public = not CUMULUS["SERVICENET"]
+                connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                         public=public)
+                metadata = connection.get_container_cdn_metadata(container_name)
+                if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
+                    uri = "NOT PUBLIC"
+                else:
+                    uri = metadata["x-cdn-uri"]
+                info = {
+                    "name": container_name,
+                    "count": values["x-container-object-count"],
+                    "size": values["x-container-bytes-used"],
+                    "uri": uri,
+                }
+                output = [str(info[o]) for o in opts if options.get(o)]
+                if not output:
+                    output = [str(info[o]) for o in opts]
+                print(", ".join(output))
             else:
-                uri = metadata["x-cdn-uri"]
-            info = {
-                "name": container_name,
-                "count": values["x-container-object-count"],
-                "size": values["x-container-bytes-used"],
-                "uri": uri,
-            }
-            output = [str(info[o]) for o in opts if options.get(o)]
-            if not output:
-                output = [str(info[o]) for o in opts]
-            print(", ".join(output))
+                headers, data = self.conn.get_container(container_name)
+                print headers
+                print data
