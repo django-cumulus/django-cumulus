@@ -93,8 +93,8 @@ class SwiftclientStorage(Storage):
 
     def _get_connection(self):
         if not hasattr(self, "_connection"):
-            public = not self.use_snet  # invert
             if CUMULUS["USE_PYRAX"]:
+                public = not self.use_snet  # invert
                 self._connection = pyrax.connect_to_cloudfiles(region=self.region,
                                                                public=public)
             else:
@@ -104,7 +104,7 @@ class SwiftclientStorage(Storage):
                     key=CUMULUS["API_KEY"],
                     snet=CUMULUS["SERVICENET"],
                     auth_version=CUMULUS["AUTH_VERSION"],
-                    tenant_name=CUMULUS["AUTH_TENANT_NAME"]
+                    tenant_name=CUMULUS["AUTH_TENANT_NAME"],
                 )
         return self._connection
 
@@ -119,7 +119,7 @@ class SwiftclientStorage(Storage):
         """
         if not hasattr(self, "_container"):
             if CUMULUS["USE_PYRAX"]:
-                self.container = self.connection.put_container(self.container_name)
+                self._container = self.connection.create_container(self.container_name)
             else:
                 self._container = None
         return self._container
@@ -187,8 +187,17 @@ class SwiftclientStorage(Storage):
         if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
             content = get_gzipped_contents(content)
             headers["Content-Encoding"] = "gzip"
-        
-        self.connection.put_object(self.container_name, name, content, headers=headers)
+
+        if CUMULUS["USE_PYRAX"]:
+            # TODO set headers
+            self.connection.store_object(container=self.container_name,
+                                         obj_name=name,
+                                         data=content.read(),
+                                         content_type=content_type,
+                                         etag=None)
+        else:
+            self.connection.put_object(self.container_name, name,
+                                       content, headers=headers)
         
         return name
 

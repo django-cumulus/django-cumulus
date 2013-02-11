@@ -169,11 +169,11 @@ CUMULUS = {
     'TTL': 600,
     'USE_SSL': False,
     'USERNAME': None,
-    'STATIC_CONTAINER': None,
     'INCLUDE_LIST': [],
     'EXCLUDE_LIST': [],
     'HEADERS': {},
     'GZIP_CONTENT_TYPES': [],
+    'USE_PYRAX': True,
 }
 
 try:
