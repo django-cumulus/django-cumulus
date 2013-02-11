@@ -19,24 +19,24 @@ class Command(NoArgsCommand):
     help = "Synchronizes static media to cloud files."
     option_list = NoArgsCommand.option_list + (
         optparse.make_option("-i", "--include", action="append", default=[],
-            dest="includes", metavar="PATTERN",
-            help="Include file or directories matching this glob-style "
-                 "pattern. Use multiple times to include more."),
+                             dest="includes", metavar="PATTERN",
+                             help="Include file or directories matching this glob-style "
+                                  "pattern. Use multiple times to include more."),
         optparse.make_option("-e", "--exclude", action="append", default=[],
-            dest="excludes", metavar="PATTERN",
-            help="Exclude files or directories matching this glob-style "
-                 "pattern. Use multiple times to exclude more."),
+                             dest="excludes", metavar="PATTERN",
+                             help="Exclude files or directories matching this glob-style "
+                                  "pattern. Use multiple times to exclude more."),
         optparse.make_option("-w", "--wipe",
-            action="store_true", dest="wipe", default=False,
-            help="Wipes out entire contents of container first."),
+                             action="store_true", dest="wipe", default=False,
+                             help="Wipes out entire contents of container first."),
         optparse.make_option("-t", "--test-run",
-            action="store_true", dest="test_run", default=False,
-            help="Performs a test run of the sync."),
+                             action="store_true", dest="test_run", default=False,
+                             help="Performs a test run of the sync."),
         optparse.make_option("-q", "--quiet",
-            action="store_true", dest="test_run", default=False,
-            help="Do not display any output."),
+                             action="store_true", dest="test_run", default=False,
+                             help="Do not display any output."),
         optparse.make_option("-c", "--container",
-            dest="container", help="Override STATIC_CONTAINER."),
+                             dest="container", help="Override STATIC_CONTAINER."),
     )
 
     def set_options(self, options):
@@ -94,24 +94,25 @@ class Command(NoArgsCommand):
                                            auth_version=CUMULUS["AUTH_VERSION"],
                                            tenant_name=CUMULUS["AUTH_TENANT_NAME"])
         try:
-            head = self.conn.head_container(self.container_name)
+            self.conn.head_container(self.container_name)
         except swiftclient.client.ClientException as exception:
             if exception.msg == "Container HEAD failed":
                 call_command("container_create", self.container_name)
             else:
                 raise
-        
+
         if CUMULUS["USE_PYRAX"]:
             public = not CUMULUS["SERVICENET"]
             pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
             connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                 public=public)
+                                                     public=public)
             container = connection.get_container(self.container_name)
             if not container.cdn_enabled:
                 container.make_public(ttl=CUMULUS["TTL"])
         else:
-            self.conn.post_container(self.container_name, headers={"X-Container-Read":".r:*"})
-        
+            headers = {"X-Container-Read": ".r:*"}
+            self.conn.post_container(self.container_name, headers=headers)
+
         self.container = self.conn.get_container(self.container_name)
 
     def handle_noargs(self, *args, **options):
@@ -200,8 +201,7 @@ class Command(NoArgsCommand):
                                   head["last-modified"],
                                   "%a, %d %b %Y %H:%M:%S %Z")
                               or None)
-            local_datetime = datetime.datetime.utcfromtimestamp(
-                                               os.stat(abspath).st_mtime)
+            local_datetime = datetime.datetime.utcfromtimestamp(os.stat(abspath).st_mtime)
 
             if cloud_datetime and local_datetime < cloud_datetime:
                 self.skip_count += 1

@@ -1,7 +1,6 @@
 import optparse
 import pyrax
 import swiftclient
-import sys
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -14,8 +13,7 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         optparse.make_option("-p", "--private", action="store_true", default=False,
-                dest="private", help="Make a private container."),)
-
+                             dest="private", help="Make a private container."),)
 
     def connect(self):
         """
@@ -46,5 +44,6 @@ class Command(BaseCommand):
                 if not container.cdn_enabled:
                     container.make_public(ttl=CUMULUS["TTL"])
             else:
-                self.conn.post_container(container_name, headers={"X-Container-Read":".r:*"})
+                headers = {"X-Container-Read": ".r:*"}
+                self.conn.post_container(container_name, headers=headers)
         print("Done")

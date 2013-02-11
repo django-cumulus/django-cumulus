@@ -1,15 +1,15 @@
 import mimetypes
 import pyrax
+import re
 import swiftclient
-
 from gzip import GzipFile
 from StringIO import StringIO
 
-from django.conf import settings
 from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
 from cumulus.settings import CUMULUS
+
 
 HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get("HEADERS", {}))
 
@@ -180,9 +180,9 @@ class SwiftclientStorage(Storage):
         else:
             mime_type, encoding = mimetypes.guess_type(name)
             content_type = mime_type
-        
-        headers = { "Content-Type": content_type }
-        
+
+        headers = {"Content-Type": content_type}
+
         # gzip the file if its of the right content type
         if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
             content = get_gzipped_contents(content)
@@ -198,7 +198,7 @@ class SwiftclientStorage(Storage):
         else:
             self.connection.put_object(self.container_name, name,
                                        content, headers=headers)
-        
+
         return name
 
     def delete(self, name):
@@ -249,7 +249,8 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in [x['name'] for x in self.connection.get_container(self.container_name, full_listing=True)[1]]:
+        for name in [x["name"] for x in
+                     self.connection.get_container(self.container_name, full_listing=True)[1]]:
             files.append(name[path_len:])
         return ([], files)
 
@@ -264,7 +265,8 @@ class SwiftclientStorage(Storage):
         if path and not path.endswith("/"):
             path = "{0}/".format(path)
         path_len = len(path)
-        for name in [x['name'] for x in self.connection.get_container(self.container_name, full_listing=True)[1]]:
+        for name in [x["name"] for x in
+                     self.connection.get_container(self.container_name, full_listing=True)[1]]:
             name = name[path_len:]
             slash = name[1:-1].find("/") + 1
             if slash:
@@ -368,6 +370,7 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
 
     def _get_connection(self):
         if not hasattr(self.local_cache, "connection"):
+            public = not self.use_snet  # invert
             connection = pyrax.connect_to_cloudfiles(region=self.region,
                                                      public=public)
             self.local_cache.connection = connection

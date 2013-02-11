@@ -2,7 +2,6 @@ import datetime
 import multiprocessing
 import optparse
 import swiftclient
-import time
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -15,7 +14,7 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         optparse.make_option("-y", "--yes", action="store_true", default=False,
-                dest="is_yes", help="Assume Yes to confirmation question"),)
+                             dest="is_yes", help="Assume Yes to confirmation question"),)
 
     def handle(self, *args, **options):
         if len(args) != 1:
@@ -59,7 +58,7 @@ class Command(BaseCommand):
         for res in results:
             output += res
         if output != cloud_objs:
-           print("Deletion failure")
+            print("Deletion failure")
         conn.delete_container(container_name)
         print(datetime.datetime.now() - start_time)
         print("Deletion complete")

@@ -1,6 +1,6 @@
-import swiftclient
 import optparse
 import pyrax
+import swiftclient
 
 from django.core.management.base import BaseCommand
 

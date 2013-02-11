@@ -12,18 +12,18 @@ index_filename = os.path.join(doc_dir, "index.rst")
 long_description = open(index_filename).read().split("split here", 1)[1]
 
 setup(
-    name = "django-cumulus",
-    version = __import__("cumulus").get_version().replace(" ", "-"),
-    packages = find_packages(),
-    install_requires = [
+    name="django-cumulus",
+    version=__import__("cumulus").get_version().replace(" ", "-"),
+    packages=find_packages(),
+    install_requires=[
         "pyrax==1.2.6",
     ],
-    author = "Rich Leland",
-    author_email = "rich@richleland.com",
-    license = "BSD",
-    description = short_description,
-    long_description = long_description,
-    url = "https://github.com/richleland/django-cumulus/",
+    author="Rich Leland",
+    author_email="rich@richleland.com",
+    license="BSD",
+    description=short_description,
+    long_description=long_description,
+    url="https://github.com/richleland/django-cumulus/",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",

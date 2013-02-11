@@ -23,7 +23,7 @@ CUMULUS = {
     "EXCLUDE_LIST": [],
     "HEADERS": {},
     "GZIP_CONTENT_TYPES": [],
-	"USE_PYRAX": True,
+    "USE_PYRAX": True,
 }
 
 if hasattr(settings, "CUMULUS"):
