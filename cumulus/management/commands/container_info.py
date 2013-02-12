@@ -75,5 +75,5 @@ class Command(BaseCommand):
                 print(", ".join(output))
             else:
                 headers, data = self.conn.get_container(container_name)
-                print headers
-                print data
+                print(headers)
+                print(data)

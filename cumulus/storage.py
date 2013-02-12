@@ -211,7 +211,7 @@ class SwiftclientStorage(Storage):
         """
         try:
             self.connection.delete_object(self.container_name, name)
-        except pyrax.exceptions.ClientException, exc:
+        except pyrax.exceptions.ClientException as exc:
             if exc.http_status == 404:
                 pass
             else:

@@ -21,7 +21,7 @@ class Command(BaseCommand):
             raise CommandError("Pass one and only one [container_name] as an argument")
         container_name = args[0]
         if not options.get("is_yes"):
-            is_ok = raw_input("Permanently delete container {0}? [y|N]".format(container_name))
+            is_ok = input("Permanently delete container {0}? [y|N]".format(container_name))
             if not is_ok == "y":
                 raise CommandError("Aborted")
 
@@ -43,7 +43,7 @@ class Command(BaseCommand):
         if len(cloud_objs) % nbr_chunks != 0:
             chunk_size += 1
         chunks = [[container_name, cloud_objs[x * chunk_size:(x + 1) * chunk_size]]
-                  for x in xrange(nbr_chunks)]
+                  for x in range(nbr_chunks)]
         # create a Pool which will create Python processes
         p = multiprocessing.Pool()
         start_time = datetime.datetime.now()
