@@ -16,8 +16,8 @@ HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get("HEADERS", {}
 
 def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     """
-    Overwrite the given cloud_obj's headers with the ones given as ``headers`
-    and add additional headers as defined in the HEADERS setting depending on
+    Overwrites the given cloud_obj's headers with the ones given as ``headers`
+    and adds additional headers as defined in the HEADERS setting depending on
     the cloud_obj's file name.
     """
     # don't set headers on directories
@@ -28,8 +28,10 @@ def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     for pattern, pattern_headers in header_patterns:
         if pattern.match(cloud_obj.name):
             matched_headers.update(pattern_headers.copy())
-    matched_headers.update(cloud_obj.headers)  # preserve headers already set
-    matched_headers.update(headers)  # explicitly set headers overwrite matches and already set headers
+    # preserve headers already set
+    matched_headers.update(cloud_obj.headers)
+    # explicitly set headers overwrite matches and already set headers
+    matched_headers.update(headers)
     if matched_headers != cloud_obj.headers:
         cloud_obj.headers = matched_headers
         cloud_obj.sync_metadata()
@@ -37,7 +39,7 @@ def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
 
 def get_gzipped_contents(input_file):
     """
-    Return a gzipped version of a previously opened file's buffer.
+    Returns a gzipped version of a previously opened file's buffer.
     """
     zbuf = StringIO()
     zfile = GzipFile(mode="wb", compresslevel=6, fileobj=zbuf)
@@ -65,7 +67,7 @@ class SwiftclientStorage(Storage):
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None):
         """
-        Initialize the settings for the connection and container.
+        Initializes the settings for the connection and container.
         """
         if username is not None:
             self.username = username
@@ -115,7 +117,7 @@ class SwiftclientStorage(Storage):
 
     def _get_container(self):
         """
-        Get or create the container.
+        Gets or creates the container.
         """
         if not hasattr(self, "_container"):
             if CUMULUS["USE_PYRAX"]:
@@ -126,7 +128,7 @@ class SwiftclientStorage(Storage):
 
     def _set_container(self, container):
         """
-        Set the container (and, if needed, the configured TTL on it), making
+        Sets the container (and, if needed, the configured TTL on it), making
         the container publicly available.
         """
         if CUMULUS["USE_PYRAX"]:
@@ -164,13 +166,13 @@ class SwiftclientStorage(Storage):
 
     def _open(self, name, mode="rb"):
         """
-        Return the SwiftclientStorageFile.
+        Returns the SwiftclientStorageFile.
         """
         return SwiftclientStorageFile(storage=self, name=name)
 
     def _save(self, name, content):
         """
-        Use the Swiftclient service to write ``content`` to a remote
+        Uses the Swiftclient service to write ``content`` to a remote
         file (called ``name``).
         """
         # Checks if the content_type is already set.
@@ -205,8 +207,7 @@ class SwiftclientStorage(Storage):
         """
         Deletes the specified file from the storage system.
 
-        Deleting a model doesn't delete associated files:
-        https://docs.djangoproject.com/en/1.3/releases/1.3/#deleting-a-model-doesn-t-delete-associated-files
+        Deleting a model doesn't delete associated files: bit.ly/12s6Oox
         """
         try:
             self.connection.delete_object(self.container_name, name)
@@ -299,7 +300,7 @@ class SwiftclientStorageFile(File):
         self._storage = storage
         self._pos = 0
         super(SwiftclientStorageFile, self).__init__(file=None, name=name,
-                                                    *args, **kwargs)
+                                                     *args, **kwargs)
 
     def _get_pos(self):
         return self._pos
@@ -338,7 +339,7 @@ class SwiftclientStorageFile(File):
 
     def open(self, *args, **kwargs):
         """
-        Open the cloud file object.
+        Opens the cloud file object.
         """
         self._pos = 0
 

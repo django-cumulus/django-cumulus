@@ -41,7 +41,7 @@ class Command(NoArgsCommand):
 
     def set_options(self, options):
         """
-        Set instance variables based on an options dict
+        Sets instance variables based on an options dict
         """
         # COMMAND LINE OPTIONS
         self.wipe = options.get("wipe")
@@ -82,7 +82,7 @@ class Command(NoArgsCommand):
 
     def connect_container(self):
         """
-        Connect using the swiftclient api.
+        Connects to a container using the swiftclient api.
 
         The container will be created and/or made public using the
         pyrax api if not already so.
@@ -151,7 +151,7 @@ class Command(NoArgsCommand):
 
     def match_cloud(self, includes, excludes):
         """
-        Return the cloud objects that match the include and exclude patterns.
+        Returns the cloud objects that match the include and exclude patterns.
         """
         cloud_objs = [cloud_obj["name"] for cloud_obj in self.container[1]]
         includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
@@ -162,7 +162,7 @@ class Command(NoArgsCommand):
 
     def match_local(self, prefix, includes, excludes):
         """
-        Filter os.walk() with include and exclude patterns.
+        Filters os.walk() with include and exclude patterns.
         See: http://stackoverflow.com/a/5141829/93559
         """
         includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
@@ -185,7 +185,7 @@ class Command(NoArgsCommand):
 
     def upload_files(self, abspaths, relpaths):
         """
-        Determine files to be uploaded and call ``upload_file`` on each.
+        Determines files to be uploaded and call ``upload_file`` on each.
         """
         for relpath in relpaths:
             abspath = [p for p in abspaths if p.endswith(relpath)][0]
@@ -212,7 +212,7 @@ class Command(NoArgsCommand):
 
     def upload_file(self, abspath, cloud_filename):
         """
-        Upload a file to the container.
+        Uploads a file to the container.
         """
         if not self.test_run:
             mime_type, encoding = mimetypes.guess_type(abspath)
@@ -231,7 +231,7 @@ class Command(NoArgsCommand):
 
     def delete_extra_files(self, relpaths, cloud_objs):
         """
-        Delete any objects from the container that do not exist locally.
+        Deletes any objects from the container that do not exist locally.
         """
         for cloud_obj in cloud_objs:
             if cloud_obj not in relpaths:
@@ -243,14 +243,14 @@ class Command(NoArgsCommand):
 
     def delete_cloud_obj(self, cloud_obj):
         """
-        Delete an object from the container.
+        Deletes an object from the container.
         """
         self.conn.delete_object(container=self.container_name,
                                 obj=cloud_obj)
 
     def wipe_container(self):
         """
-        Completely wipe out the contents of the container.
+        Completely wipes out the contents of the container.
         """
         if self.test_run:
             print("Wipe would delete {0} objects.".format(len(self.container[1])))
@@ -262,7 +262,7 @@ class Command(NoArgsCommand):
 
     def print_tally(self):
         """
-        Print the final tally to stdout.
+        Prints the final tally to stdout.
         """
         self.update_count = self.upload_count - self.create_count
         if self.test_run:

@@ -65,7 +65,7 @@ class Command(BaseCommand):
 
 
 def delete_cloud_objects(chunk):
-    """Delete cloud objects. Runs in a separate process."""
+    """Deletes cloud objects. Runs in a separate process."""
     container_name, cloud_objs = chunk
     conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                   user=CUMULUS["USERNAME"],

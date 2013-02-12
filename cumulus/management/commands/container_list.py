@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     def connect(self):
         """
-        Connect using the swiftclient api.
+        Connects using the swiftclient api.
         """
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """
-        List all the items in a container to stdout.
+        Lists all the items in a container to stdout.
         """
         if len(args) == 0:
             self.connect()
@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
     def list_all_containers(self):
         """
-        Print a list of all containers.
+        Prints a list of all containers.
         """
         print("...Listing containers...")
 

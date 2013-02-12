@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     def connect(self):
         """
-        Connect using the swiftclient api.
+        Connects using the swiftclient api.
         """
         self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],

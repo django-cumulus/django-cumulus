@@ -12,7 +12,7 @@ def _get_container_urls(swiftclient_storage):
 
 def cdn_url(request):
     """
-    A context processor to expose the full CDN URL in templates.
+    A context processor that exposes the full CDN URL in templates.
     """
     cdn_url, ssl_url = _get_container_urls(SwiftclientStorage())
     static_url = settings.STATIC_URL
@@ -25,7 +25,7 @@ def cdn_url(request):
 
 def static_cdn_url(request):
     """
-    A context processor to expose the full static CDN URL
+    A context processor that exposes the full static CDN URL
     as static URL in templates.
     """
     cdn_url, ssl_url = _get_container_urls(SwiftclientStaticStorage())
