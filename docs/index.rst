@@ -118,7 +118,7 @@ Add the following required settings::
 
     CUMULUS = {
         'STATIC_CONTAINER': 'MyStaticContainer', # the name of the container to sync with
-        'USE_SERVICENET': False, # whether to use rackspace's internal private network
+        'SERVICENET': False, # whether to use rackspace's internal private network
         'FILTER_LIST': [] # a list of files to exclude from sync
     }
 
