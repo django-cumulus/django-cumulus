@@ -63,7 +63,8 @@ class Command(BaseCommand):
         print('Connecting')
         conn = cloudfiles.get_connection(
                 username=settings.CUMULUS['USERNAME'],
-                api_key=settings.CUMULUS['API_KEY'])
+                api_key=settings.CUMULUS['API_KEY'],
+                authurl=settings.CUMULUS['AUTH_URL'])
         container = conn.get_container(container_name)
 
         if not is_yes:
