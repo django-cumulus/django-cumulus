@@ -20,7 +20,7 @@ HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get('HEADERS', {}
 def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     """
     Overwrite the given cloud_obj's headers with the ones given as ``headers`
-    and add additional headers as defined in the HEADERS setting depending on 
+    and add additional headers as defined in the HEADERS setting depending on
     the cloud_obj's file name.
     """
     # don't set headers on directories
@@ -98,13 +98,13 @@ class CloudFilesStorage(Storage):
 
     def _get_connection(self):
         if not hasattr(self, '_connection'):
-            self._connection = cloudfiles.get_connection(
-                                  username=self.username,
-                                  api_key=self.api_key,
-                                  authurl = self.auth_url,
-                                  timeout=self.timeout,
-                                  servicenet=self.use_servicenet,
-                                  **self.connection_kwargs)
+            con = cloudfiles.get_connection(username=self.username,
+                                            api_key=self.api_key,
+                                            authurl=self.auth_url,
+                                            timeout=self.timeout,
+                                            servicenet=self.use_servicenet,
+                                            **self.connection_kwargs)
+            self._connection = con
         return self._connection
 
     def _set_connection(self, value):
@@ -114,8 +114,7 @@ class CloudFilesStorage(Storage):
 
     def _get_container(self):
         if not hasattr(self, '_container'):
-            self.container = self.connection.get_container(
-                                                        self.container_name)
+            self.container = self.connection.get_container(self.container_name)
         return self._container
 
     def _set_container(self, container):
@@ -287,10 +286,10 @@ class CloudFilesStorage(Storage):
         # depending on whether or not we pre-loaded objects.
         # When pre-loaded, timezone is not included but we
         # assume UTC. Since FileStorage returns localtime, and
-        # collectstatic compares these dates, we need to depend 
+        # collectstatic compares these dates, we need to depend
         # on dateutil to help us convert timezones.
         try:
-           from dateutil import parser, tz
+            from dateutil import parser, tz
         except ImportError:
             raise NotImplementedError("This functionality requires dateutil to be installed")
 
@@ -300,7 +299,7 @@ class CloudFilesStorage(Storage):
         date = parser.parse(obj.last_modified)
 
         # if the date has no timzone, assume UTC
-        if date.tzinfo == None:
+        if date.tzinfo is None:
             date = date.replace(tzinfo=tz.tzutc())
 
         # convert date to local time w/o timezone
@@ -406,6 +405,7 @@ class CloudFilesStorageFile(File):
     def seek(self, pos):
         self._pos = pos
 
+
 class ThreadSafeCloudFilesStorage(CloudFilesStorage):
     """
     Extends CloudFilesStorage to make it mostly thread safe.
@@ -425,7 +425,8 @@ class ThreadSafeCloudFilesStorage(CloudFilesStorage):
     def _get_connection(self):
         if not hasattr(self.local_cache, 'connection'):
             connection = cloudfiles.get_connection(self.username,
-                                    self.api_key, **self.connection_kwargs)
+                                                   self.api_key,
+                                                   **self.connection_kwargs)
             self.local_cache.connection = connection
 
         return self.local_cache.connection
