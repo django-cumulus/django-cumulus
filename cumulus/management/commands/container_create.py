@@ -25,7 +25,8 @@ class Command(BaseCommand):
 
         conn = cloudfiles.get_connection(
                         username=settings.CUMULUS['USERNAME'],
-                        api_key=settings.CUMULUS['API_KEY'])
+                        api_key=settings.CUMULUS['API_KEY'],
+                        authurl=settings.CUMULUS['AUTH_URL'])
 
         container = conn.create_container(container_name)
         container.make_public()

@@ -17,10 +17,11 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        USERNAME = settings.CUMULUS['USERNAME']
-        API_KEY = settings.CUMULUS['API_KEY']
+        conn = cloudfiles.get_connection(
+                username=settings.CUMULUS['USERNAME'],
+                api_key=settings.CUMULUS['API_KEY'],
+                authurl=settings.CUMULUS['AUTH_URL'])
 
-        conn = cloudfiles.get_connection(USERNAME, API_KEY)
         if args:
             containers = []
             for container_name in args:
