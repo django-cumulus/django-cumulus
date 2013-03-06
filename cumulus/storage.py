@@ -158,7 +158,9 @@ class CloudFilesStorage(Storage):
         (called ``name``).
         """
         (path, last) = os.path.split(name)
-        if path:
+ 
+        # Avoid infinite loop if path is '/'
+        if path and path != '/':
             try:
                 self.container.get_object(path)
             except NoSuchObject:
