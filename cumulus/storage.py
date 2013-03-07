@@ -1,6 +1,7 @@
 import mimetypes
 import os
 import re
+import hashlib
 from gzip import GzipFile
 from StringIO import StringIO
 
@@ -168,25 +169,36 @@ class CloudFilesStorage(Storage):
 
         content.open()
         cloud_obj = self.container.create_object(name)
-        # If the content type is available, pass it in directly rather than
-        # getting the cloud object to try to guess.
-        if hasattr(content.file, 'content_type'):
-            cloud_obj.content_type = content.file.content_type
-        elif hasattr(content, 'content_type'):
-            cloud_obj.content_type = content.content_type
-        else:
-            mime_type, encoding = mimetypes.guess_type(name)
-            cloud_obj.content_type = mime_type
-        # gzip the file if its of the right content type
-        if cloud_obj.content_type in CUMULUS.get('GZIP_CONTENT_TYPES', []):
-            content = get_gzipped_contents(content)
-            cloud_obj.headers['Content-Encoding'] = 'gzip'
-        # set file size
-        if hasattr(content.file, 'size'):
-            cloud_obj.size = content.file.size
-        else:
-            cloud_obj.size = content.size
-        cloud_obj.send(content)
+        
+        # If the objects has a hash, it already exists. The hash is md5 of
+        # the content. If the hash has not changed, do not send the file over
+        # again.
+        upload = True
+        if cloud_obj.etag:
+            if cloud_obj.etag == cloud_obj.compute_md5sum(content.file):
+                upload = False
+
+        if upload:
+            # If the content type is available, pass it in directly rather than
+            # getting the cloud object to try to guess.
+            if hasattr(content.file, 'content_type'):
+                cloud_obj.content_type = content.file.content_type
+            elif hasattr(content, 'content_type'):
+                cloud_obj.content_type = content.content_type
+            else:
+                mime_type, encoding = mimetypes.guess_type(name)
+                cloud_obj.content_type = mime_type
+            # gzip the file if its of the right content type
+            if cloud_obj.content_type in CUMULUS.get('GZIP_CONTENT_TYPES', []):
+                content = get_gzipped_contents(content)
+                cloud_obj.headers['Content-Encoding'] = 'gzip'
+            # set file size
+            if hasattr(content.file, 'size'):
+                cloud_obj.size = content.file.size
+            else:
+                cloud_obj.size = content.size
+            cloud_obj.send(content)
+
         content.close()
         sync_headers(cloud_obj)
         return name
