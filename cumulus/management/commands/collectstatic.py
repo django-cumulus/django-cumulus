@@ -21,4 +21,4 @@ class Command(collectstatic.Command):
                         return False
                 except:
                     raise
-        super(Command, self).delete_file(path, prefixed_path, source_storage)
+        return super(Command, self).delete_file(path, prefixed_path, source_storage)
