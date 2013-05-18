@@ -179,6 +179,8 @@ class SwiftclientStorage(Storage):
         # Otherwise uses the mimetypes library to guess.
         if hasattr(content.file, "content_type"):
             content_type = content.file.content_type
+        else:
+            mime_type, encoding = mimetypes.guess_type(name)
             content_type = mime_type
 
         headers = {"Content-Type": content_type}
