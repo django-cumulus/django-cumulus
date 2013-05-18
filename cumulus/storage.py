@@ -65,7 +65,7 @@ class SwiftclientStorage(Storage):
     use_pyrax = CUMULUS["USE_PYRAX"]
 
     def __init__(self, username=None, api_key=None, container=None,
-                 connection_kwargs=None):
+                 connection_kwargs=None, container_uri=None):
         """
         Initializes the settings for the connection and container.
         """
@@ -179,15 +179,12 @@ class SwiftclientStorage(Storage):
         # Otherwise uses the mimetypes library to guess.
         if hasattr(content.file, "content_type"):
             content_type = content.file.content_type
-        else:
-            mime_type, encoding = mimetypes.guess_type(name)
             content_type = mime_type
 
         headers = {"Content-Type": content_type}
 
         # gzip the file if its of the right content type
         if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-            content = get_gzipped_contents(content)
             headers["Content-Encoding"] = "gzip"
 
         if CUMULUS["USE_PYRAX"]:
