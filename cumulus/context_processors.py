@@ -1,10 +1,15 @@
+from urlparse import urlparse
+
 from django.conf import settings
 
 from cumulus.storage import CloudFilesStorage, CloudFilesStaticStorage
 
+def _is_ssl_uri(uri):
+    return urlparse(uri).scheme == 'https'
+
 def _get_container_urls(cloudfiles_storage):
     cdn_url = cloudfiles_storage._get_container_url()
-    ssl_url = cloudfiles_storage.container.public_ssl_uri()
+    ssl_url = cdn_url if _is_ssl_uri(cdn_url) else cloudfiles_storage.container.public_ssl_uri()
     
     return cdn_url, ssl_url
 

@@ -65,7 +65,7 @@ class CloudFilesStorage(Storage):
     use_ssl = CUMULUS['USE_SSL']
 
     def __init__(self, username=None, api_key=None, container=None, timeout=None,
-                 connection_kwargs=None):
+                 connection_kwargs=None, container_uri=None):
         """
         Initialize the settings for the connection and container.
         """
@@ -80,7 +80,9 @@ class CloudFilesStorage(Storage):
         if connection_kwargs is not None:
             self.connection_kwargs = connection_kwargs
 
-        if 'CONTAINER_URI' in CUMULUS:
+        if container_uri is not None:
+            self._container_public_uri = container_uri
+        elif 'CONTAINER_URI' in CUMULUS:
             self._container_public_uri = CUMULUS['CONTAINER_URI']
 
     def __getstate__(self):
