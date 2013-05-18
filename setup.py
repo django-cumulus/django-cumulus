@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 import os
+
 from setuptools import setup, find_packages
 
 # Use the docstring of the __init__ file to be the description
