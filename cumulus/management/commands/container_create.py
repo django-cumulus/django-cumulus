@@ -1,34 +1,49 @@
-"""Create a public (CDN) rackspace container.
-"""
-
-import sys
+import optparse
+import pyrax
+import swiftclient
 
 from django.core.management.base import BaseCommand, CommandError
-import cloudfiles
 
-from cumulus import settings
-
-USAGE = 'django-admin.py container_create <container_name>'
+from cumulus.settings import CUMULUS
 
 
 class Command(BaseCommand):
-    """Create a public container"""
+    help = "Create a container."
+    args = "[container_name]"
+
+    option_list = BaseCommand.option_list + (
+        optparse.make_option("-p", "--private", action="store_true", default=False,
+                             dest="private", help="Make a private container."),)
+
+    def connect(self):
+        """
+        Connects using the swiftclient api.
+        """
+        self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
+                                           user=CUMULUS["USERNAME"],
+                                           key=CUMULUS["API_KEY"],
+                                           snet=CUMULUS["SERVICENET"],
+                                           auth_version=CUMULUS["AUTH_VERSION"],
+                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
 
     def handle(self, *args, **options):
-        """Main"""
-
-        if len(sys.argv) != 3:
-            raise CommandError('Usage: %s' % USAGE)
-
-        container_name = sys.argv[2]
-        print('Creating container: %s' % container_name)
-
-        conn = cloudfiles.get_connection(
-                        username=settings.CUMULUS['USERNAME'],
-                        api_key=settings.CUMULUS['API_KEY'],
-                        authurl=settings.CUMULUS['AUTH_URL'])
-
-        container = conn.create_container(container_name)
-        container.make_public()
-
-        print('Done')
+        if len(args) != 1:
+            raise CommandError("Pass one and only one [container_name] as an argument")
+        self.connect()
+        container_name = args[0]
+        print("Creating container: {0}".format(container_name))
+        self.conn.put_container(container_name)
+        if not options.get("private"):
+            print("Publish container: {0}".format(container_name))
+            if CUMULUS["USE_PYRAX"]:
+                pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+                public = not CUMULUS["SERVICENET"]
+                connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
+                                                         public=public)
+                container = connection.get_container(container_name)
+                if not container.cdn_enabled:
+                    container.make_public(ttl=CUMULUS["TTL"])
+            else:
+                headers = {"X-Container-Read": ".r:*"}
+                self.conn.post_container(container_name, headers=headers)
+        print("Done")

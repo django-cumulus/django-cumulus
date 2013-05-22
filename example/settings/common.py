@@ -1,6 +1,6 @@
 import os
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -13,8 +13,9 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'dev.db',                      # Or path to database file if using sqlite3.
+        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',              # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -81,7 +82,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -91,7 +92,7 @@ SECRET_KEY = '!gz7b74mfu7^mj0yj&dxc&^$o7tf%^0&i07y7s#zv73x($g%pa'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    # 'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -124,15 +125,21 @@ INSTALLED_APPS = (
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error.
+# the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
+            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
@@ -145,25 +152,32 @@ LOGGING = {
     }
 }
 
-DEFAULT_FILE_STORAGE = 'cumulus.storage.CloudFilesStorage'
-STATICFILES_STORAGE = 'cumulus.storage.CloudFilesStaticStorage'
+DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+#STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
     'API_KEY': None,
     'AUTH_URL': 'us_authurl',
+    'REGION': 'DFW',
     'CNAMES': None,
-    'CONTAINER': None,
+    'CONTAINER': 'cumulus-content-tests',
+    'CONTAINER_URI': None,
+    'CONTAINER_SSL_URI': None,
+    'STATIC_CONTAINER': 'cumulus-static-tests',
     'SERVICENET': False,
     'TIMEOUT': 5,
     'TTL': 600,
     'USE_SSL': False,
     'USERNAME': None,
-    'STATIC_CONTAINER': None,
-    'FILTER_LIST': []
+    'INCLUDE_LIST': [],
+    'EXCLUDE_LIST': [],
+    'HEADERS': {},
+    'GZIP_CONTENT_TYPES': [],
+    'USE_PYRAX': True,
 }
 
 try:
-    from local_settings import *
+    from local_settings import *  # noqa
 except:
     pass

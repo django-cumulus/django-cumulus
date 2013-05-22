@@ -11,8 +11,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -172,8 +170,8 @@ htmlhelp_basename = 'django-cumulusdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'django-cumulus.tex', u'django-cumulus Documentation',
-   u'Rich Leland', 'manual'),
+    ('index', 'django-cumulus.tex', u'django-cumulus Documentation',
+     u'Rich Leland', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
