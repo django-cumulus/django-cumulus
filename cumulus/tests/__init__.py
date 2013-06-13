@@ -144,3 +144,55 @@ class CumulusTests(TestCase):
         self.ord_connection.delete_container(name)
         self.assertFalse([c.name for c in self.ord_connection.get_all_containers()
                           if c.name == name])
+
+
+class GzippedContentTests(TestCase):
+    """
+    To run only one test::
+
+        ./manage.py test --settings=settings.test cumulus.GzippedContentTests.test_file_api
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        # The content container is created by storage.py during the tests syncdb
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        call_command("container_delete", CUMULUS["CONTAINER"], is_yes=True)
+
+    def setUp(self):
+        # use a content big enough so we can note the gzip impact
+        self.content = "test content\n" * 10  
+
+        CUMULUS["GZIP_CONTENT_TYPES"] = ['text/plain']
+
+        self.gzipped_document = SimpleUploadedFile("test.txt", self.content)
+        self.custom = SimpleUploadedFile("custom.txt", self.content, content_type="custom/type")
+        self.thing = Thing.objects.create(document=self.gzipped_document,
+                                          custom=self.custom)
+
+    def tearDown(self):
+        self.thing.delete()
+
+    def test_sizes(self):
+        "Check if the text doc was gzipped and the custom type doc wasn't."
+        size = len(self.content)
+        self.assertTrue(self.thing.document.size < size)
+        self.assertEqual(self.thing.custom.size, size)
+
+    def test_content_encoding(self):
+        "Check the content encoding of the files."
+        cloud_document = openstack_storage.container.get_object(
+            self.thing.document.name)
+
+        metadata, content = cloud_document.get(include_meta=True)
+        self.assertEqual(metadata["content-type"], "text/plain")
+        self.assertEqual(metadata["content-encoding"], "gzip")
+
+        cloud_custom = openstack_storage.container.get_object(
+            self.thing.custom.name)
+        metadata, content = cloud_custom.get(include_meta=True)
+        self.assertEqual(metadata["content-type"], "custom/type")
+        self.assertTrue("content-encoding" not in metadata)

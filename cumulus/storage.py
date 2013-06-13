@@ -187,16 +187,22 @@ class SwiftclientStorage(Storage):
 
         # gzip the file if its of the right content type
         if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-            headers["Content-Encoding"] = "gzip"
+            content_encoding = headers["Content-Encoding"] = "gzip"
+        else:
+            content_encoding = None
 
         if CUMULUS["USE_PYRAX"]:
             # TODO set headers
+            if content_encoding == "gzip":
+                content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
                                          obj_name=name,
                                          data=content.read(),
                                          content_type=content_type,
+                                         content_encoding=content_encoding,
                                          etag=None)
         else:
+            # TODO gzipped content when using swift client
             self.connection.put_object(self.container_name, name,
                                        content, headers=headers)
 
