@@ -193,7 +193,7 @@ class SwiftclientStorage(Storage):
 
         if CUMULUS["USE_PYRAX"]:
             # TODO set headers
-            if content_encoding is not None:
+            if content_encoding == "gzip":
                 content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
                                          obj_name=name,
