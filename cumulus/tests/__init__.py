@@ -73,33 +73,47 @@ class CumulusTests(TestCase):
         """
         Tests different approaches to read the file.
         """
-        document = self.thing.document
+        doc_file = self.thing.document.file
 
-        # get the whole file by omitting chunk_size
-        content = document.read()
+        # Get the whole file by omitting chunk_size
+        content = doc_file.read()
         self.assertEqual(content, "test content")
 
-        # get only a chunk
-        document.seek(0)
-        chunk = document.read(4)
+        # Set a chunk_size and get a generator to be iterated
+        content = "".join(doc_file.chunks(4))
+        self.assertEqual(content, "test content")
+
+        # In this case, multiple_chunks would return True
+        self.assertTrue(doc_file.multiple_chunks(4))
+
+        # Unless the chunk_size is larger than file size (django's default
+        # chunk size for these operations are 64kb)
+        self.assertFalse(doc_file.multiple_chunks(64 * 2 ** 10))
+
+        # Get only a chunk
+        doc_file.seek(0)
+        chunk = doc_file.read(4)
         self.assertEqual(chunk, "test")
 
-        # be aware that read requests are independent, another read call would
-        # get the first bytes again
-        another_chunk = document.read(4)
-        self.assertEqual(another_chunk, "test")
-        self.assertNotEqual(another_chunk, " con")
+        # Try again and start from the beginning. Pyrax get method, called
+        # through file's read, when set a chunk_size, returns a generator that
+        # must be fully read until subsequent calls. It is impossible to use
+        # the API like bellow
+        another_chunk = doc_file.read(3)
+        self.assertEqual(another_chunk, "tes")
+        self.assertNotEqual(another_chunk, " co")
 
         # it is ok to get 0 bytes
-        zero = self.thing.document.read(0)
+        zero = doc_file.read(0)
         self.assertEqual(zero, "")
 
-        # iter through lines
+        # It is possible to iter through lines
+        custom_file = self.thing.custom.file
         lines = [
             "custom type 1\n",
             "custom type 2\n"
         ]
-        for line in self.thing.custom:
+        for line in custom_file:
             self.assertEqual(line, lines.pop(0))
 
     def test_image_content_type(self):
