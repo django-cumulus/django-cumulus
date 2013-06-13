@@ -335,12 +335,27 @@ class SwiftclientStorageFile(File):
 
     file = property(_get_file, _set_file)
 
-    def read(self, chunk_size):
-        if self._pos == self._get_size():
+    def read(self, chunk_size=-1):
+        """
+        Reads specified chunk_size or the whole file if chunk_size is None.
+        """
+        if self._pos == self._get_size() or chunk_size == 0:
             return ""
-        data = self.file.get(chunk_size=chunk_size).next()
+
+        if chunk_size < 0:
+            data = self.file.get()
+        else:
+            data = self.file.get(chunk_size=chunk_size).next()
         self._pos += len(data)
         return data
+
+    def chunks(self, chunk_size=None):
+        """
+        Returns an iterator of file where each chunk has chunk_size.
+        """
+        if not chunk_size:
+            chunk_size = self.DEFAULT_CHUNK_SIZE
+        return self.file.get(chunk_size=chunk_size)
 
     def open(self, *args, **kwargs):
         """
