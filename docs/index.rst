@@ -304,7 +304,7 @@ If True, will use the Official Rackspace's Python SDK for OpenStack/Rackspace AP
 PYRAX_IDENTITY_TYPE
 -------------------
 
-Pyrax supports different identity types. For now (version 1.4.5), there is two types available: rackspace and keystone. You **can** specify it through cumulus settings and if you don't, you must do it through other means (see Pyrax docs to know how).
+Pyrax supports different identity types. For now (version 1.4.5 or Pyrax), there is two types available: *rackspace* and *keystone*. You **can** specify it through cumulus settings and if you don't, you must do it through other means (like environment variables or configuration files, see Pyrax docs for more details).
 
 Requirements
 ************
