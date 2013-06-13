@@ -203,6 +203,7 @@ Below are the default settings::
         'USERNAME': None,
         'STATIC_CONTAINER': None,
         'FILTER_LIST': [],
+        'GZIP_CONTENT_TYPES': [],
         'USE_PYRAX': True,
         'PYRAX_IDENTITY_TYPE': None,
     }
@@ -295,6 +296,17 @@ access webfonts across domains::
            }),
        )
    }
+
+GZIP_CONTENT_TYPES
+------------------
+
+Set which content types must be gzipped before sent to the cloud:
+
+    CUMULUS = {
+        'GZIP_CONTENT_TYPES': ['image/jpeg', 'text/css'],
+    }
+
+The files matching these content types would be gzipped and will have *gzip* content-encoding.
 
 USE_PYRAX
 ---------
