@@ -322,7 +322,7 @@ Requirements
 ************
 
 * Django>=1.2
-* pyrax==1.2.6
+* pyrax==1.4.5
 
 Tests
 *****
