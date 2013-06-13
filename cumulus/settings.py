@@ -24,6 +24,7 @@ CUMULUS = {
     "HEADERS": {},
     "GZIP_CONTENT_TYPES": [],
     "USE_PYRAX": True,
+    "PYRAX_IDENTITY_TYPE": None,
 }
 
 if hasattr(settings, "CUMULUS"):

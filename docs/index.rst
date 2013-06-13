@@ -202,7 +202,9 @@ Below are the default settings::
         'USE_SSL': False,
         'USERNAME': None,
         'STATIC_CONTAINER': None,
-        'FILTER_LIST': []
+        'FILTER_LIST': [],
+        'USE_PYRAX': True,
+        'PYRAX_IDENTITY_TYPE': None,
     }
 
 API_KEY
@@ -293,6 +295,16 @@ access webfonts across domains::
            }),
        )
    }
+
+USE_PYRAX
+---------
+
+If True, will use the Official Rackspace's Python SDK for OpenStack/Rackspace APIs. Defaults to True.
+
+PYRAX_IDENTITY_TYPE
+-------------------
+
+Pyrax supports different identity types. For now (version 1.4.5), there is two types available: rackspace and keystone. You **can** specify it through cumulus settings and if you don't, you must do it through other means (see Pyrax docs to know how).
 
 Requirements
 ************
