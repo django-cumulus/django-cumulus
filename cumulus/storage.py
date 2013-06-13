@@ -343,6 +343,14 @@ class SwiftclientStorageFile(File):
         self._pos += len(data)
         return data
 
+    def chunks(self, chunk_size=None):
+        """
+        Returns an iterator of file where each chunk has chunk_size.
+        """
+        if not chunk_size:
+            chunk_size = self.DEFAULT_CHUNK_SIZE
+        return self.file.get(chunk_size=chunk_size)
+
     def open(self, *args, **kwargs):
         """
         Opens the cloud file object.
