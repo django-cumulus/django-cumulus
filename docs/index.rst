@@ -203,7 +203,9 @@ Below are the default settings::
         'USERNAME': None,
         'STATIC_CONTAINER': None,
         'FILTER_LIST': [],
-        'GZIP_CONTENT_TYPES': []
+        'GZIP_CONTENT_TYPES': [],
+        'USE_PYRAX': True,
+        'PYRAX_IDENTITY_TYPE': None,
     }
 
 API_KEY
@@ -304,13 +306,30 @@ Set which content types must be gzipped before sent to the cloud:
         'GZIP_CONTENT_TYPES': ['image/jpeg', 'text/css'],
     }
 
-The files matching these content types would be gzipped and will have *gzip* content-encoding.
+The files matching these content types would be gzipped and will have *gzip*
+content-encoding.
+
+USE_PYRAX
+---------
+
+If True, will use the Official Rackspace's Python SDK for OpenStack/Rackspace
+APIs. Defaults to True.
+
+PYRAX_IDENTITY_TYPE
+-------------------
+
+Pyrax supports different identity types. For now (version 1.4.5 of Pyrax),
+there are two types available: *rackspace* and *keystone*.
+
+You **can** specify it through cumulus settings and if you don't, you **must**
+do it through other means (like environment variables or configuration files,
+see Pyrax documentation for more details).
 
 Requirements
 ************
 
 * Django>=1.2
-* pyrax==1.2.6
+* pyrax==1.4.5
 
 Tests
 *****

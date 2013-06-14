@@ -79,6 +79,8 @@ class SwiftclientStorage(Storage):
             self.connection_kwargs = connection_kwargs
         # connect
         if CUMULUS["USE_PYRAX"]:
+            if CUMULUS["PYRAX_IDENTITY_TYPE"]:
+                pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
             pyrax.set_credentials(self.username, self.api_key)
 
     def __getstate__(self):
