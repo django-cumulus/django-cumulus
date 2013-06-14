@@ -150,7 +150,7 @@ class GzippedContentTests(TestCase):
     """
     To run only one test::
 
-        ./manage.py test --settings=settings.test cumulus.GzippedContentTests.test_file_api
+        ./manage.py test --settings=settings.test cumulus.GzippedContentTests.test_sizes
     """
 
     @classmethod
@@ -196,3 +196,11 @@ class GzippedContentTests(TestCase):
         metadata, content = cloud_custom.get(include_meta=True)
         self.assertEqual(metadata["content-type"], "custom/type")
         self.assertTrue("content-encoding" not in metadata)
+
+    def test_read_gunzips(self):
+        """
+        Read a gzip file with a gzip content-encoding would get
+        the gunzipped content.
+        """
+        content = self.thing.document.read()
+        self.assertEqual(content, self.content)

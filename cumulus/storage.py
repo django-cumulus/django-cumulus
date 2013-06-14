@@ -340,12 +340,19 @@ class SwiftclientStorageFile(File):
     def read(self, chunk_size=-1):
         """
         Reads specified chunk_size or the whole file if chunk_size is None.
+
+        If reading the whole file and the content-encoding is gzip, also 
+        gunzip the read content.
         """
         if self._pos == self._get_size() or chunk_size == 0:
             return ""
 
         if chunk_size < 0:
-            data = self.file.get()
+            meta, data = self.file.get(include_meta=True)
+            if meta.get('content-encoding', None) == 'gzip':
+                zbuf = StringIO(data)
+                zfile = GzipFile(mode="rb", fileobj=zbuf)
+                data = zfile.read()
         else:
             data = self.file.get(chunk_size=chunk_size).next()
         self._pos += len(data)
