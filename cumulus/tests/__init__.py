@@ -38,6 +38,8 @@ class CumulusTests(TestCase):
                                           document=self.document,
                                           custom=self.custom)
         pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+        if CUMULUS["PYRAX_IDENTITY_TYPE"]:
+            pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
         self.public = not CUMULUS["SERVICENET"]  # invert
         self.connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                       public=self.public)

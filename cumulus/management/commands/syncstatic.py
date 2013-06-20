@@ -102,6 +102,8 @@ class Command(NoArgsCommand):
                 raise
 
         if CUMULUS["USE_PYRAX"]:
+            if CUMULUS["PYRAX_IDENTITY_TYPE"]:
+                pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
             public = not CUMULUS["SERVICENET"]
             pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
             connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],

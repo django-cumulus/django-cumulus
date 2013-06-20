@@ -37,6 +37,8 @@ class Command(BaseCommand):
             print("Publish container: {0}".format(container_name))
             if CUMULUS["USE_PYRAX"]:
                 pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
+                if CUMULUS["PYRAX_IDENTITY_TYPE"]:
+                    pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
                 public = not CUMULUS["SERVICENET"]
                 connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                          public=public)
