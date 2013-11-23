@@ -4,7 +4,7 @@ An interface to the python-swiftclient api through Django.
 __version_info__ = {
     'major': 1,
     'minor': 0,
-    'micro': 10,
+    'micro': 11,
     'releaselevel': 'final',
     'serial': 1
 }
