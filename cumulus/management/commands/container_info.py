@@ -54,9 +54,9 @@ class Command(BaseCommand):
         opts = ["name", "count", "size", "uri"]
         for container_name, values in containers.iteritems():
             if CUMULUS["USE_PYRAX"]:
-                pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
                 if CUMULUS["PYRAX_IDENTITY_TYPE"]:
                     pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
+                pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
                 public = not CUMULUS["SERVICENET"]
                 connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                          public=public)
