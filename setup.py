@@ -17,7 +17,7 @@ setup(
     version=__import__("cumulus").get_version().replace(" ", "-"),
     packages=find_packages(),
     install_requires=[
-        "pyrax>=1.5.0",
+        "pyrax>1.5,<1.7",
     ],
     author="Rich Leland",
     author_email="rich@richleland.com",
