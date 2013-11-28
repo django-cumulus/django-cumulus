@@ -53,23 +53,28 @@ class CumulusTests(TestCase):
         self.assertEqual(self.thing.image.width, 1)
         self.assertEqual(self.thing.image.height, 1)
         self.assertEqual(self.thing.image.size, 695)
-        self.assertTrue("rackcdn.com" in self.thing.image.url,
-                        "URL is not a valid Cloud Files CDN URL.")
-
         self.assertEqual(self.thing.document.size, 12)
-        self.assertTrue("rackcdn.com" in self.thing.document.url,
-                        "URL is not a valid Cloud Files CDN URL.")
+
+        # Don't check CDN details if we don't have a CDN connection.
+        cdn_connection = self.thing.image.storage.container.client.cdn_connection
+        if cdn_connection is not None:
+            self.assertTrue("rackcdn.com" in self.thing.image.url,
+                            "URL is not a valid Cloud Files CDN URL.")
+            self.assertTrue("rackcdn.com" in self.thing.document.url,
+                            "URL is not a valid Cloud Files CDN URL.")
+
 
         CUMULUS["CONTAINER_URI"] = "http://media.mysite.com"
         self.assertTrue(self.thing.image.url.startswith(
             "http://media.mysite.com/cumulus-tests/"))
 
         CUMULUS["CONTAINER_URI"] = None
-        CUMULUS["CNAMES"] = {
-            self.container.cdn_uri: "http://media.myothersite.com"
-        }
-        self.assertTrue(self.thing.image.url.startswith(
-            "http://media.myothersite.com/cumulus-tests/"))
+        if cdn_connection is not None:
+            CUMULUS["CNAMES"] = {
+                self.container.cdn_uri: "http://media.myothersite.com"
+            }
+            self.assertTrue(self.thing.image.url.startswith(
+                "http://media.myothersite.com/cumulus-tests/"))
 
     def test_file_read(self):
         """
@@ -140,6 +145,9 @@ class CumulusTests(TestCase):
         "Ensure that the region option works properly"
         self.ord_connection = pyrax.connect_to_cloudfiles(region="ORD",
                                                           public=self.public)
+        if self.ord_connection is None:
+            self.skipTest("The ORD region is not available (possibly because "
+                          "you're not using rackspace filestorage).")
         name = "{0}-ORD".format(CUMULUS["CONTAINER"])
         self.ord_container = self.ord_connection.create_container(name)
         self.assertTrue(self.ord_connection.get_container(name))
@@ -166,7 +174,7 @@ class GzippedContentTests(TestCase):
 
     def setUp(self):
         # use a content big enough so we can note the gzip impact
-        self.content = "test content\n" * 10  
+        self.content = "test content\n" * 10
 
         CUMULUS["GZIP_CONTENT_TYPES"] = ['text/plain']
 

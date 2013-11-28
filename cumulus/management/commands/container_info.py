@@ -53,6 +53,12 @@ class Command(BaseCommand):
 
         opts = ["name", "count", "size", "uri"]
         for container_name, values in containers.iteritems():
+            info = {
+                "name": container_name,
+                "count": values["x-container-object-count"],
+                "size": values["x-container-bytes-used"],
+                "uri": "{}/{}".format(self.conn.url, container_name),
+            }
             if CUMULUS["USE_PYRAX"]:
                 if CUMULUS["PYRAX_IDENTITY_TYPE"]:
                     pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
@@ -60,22 +66,15 @@ class Command(BaseCommand):
                 public = not CUMULUS["SERVICENET"]
                 connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                          public=public)
-                metadata = connection.get_container_cdn_metadata(container_name)
-                if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
-                    uri = "NOT PUBLIC"
-                else:
-                    uri = metadata["x-cdn-uri"]
-                info = {
-                    "name": container_name,
-                    "count": values["x-container-object-count"],
-                    "size": values["x-container-bytes-used"],
-                    "uri": uri,
-                }
-                output = [str(info[o]) for o in opts if options.get(o)]
-                if not output:
-                    output = [str(info[o]) for o in opts]
-                print(", ".join(output))
-            else:
-                headers, data = self.conn.get_container(container_name)
-                print(headers)
-                print(data)
+                if connection.cdn_connection is not None:
+                    metadata = connection.get_container_cdn_metadata(container_name)
+                    if "x-cdn-enabled" not in metadata or metadata["x-cdn-enabled"] == "False":
+                        uri = "NOT PUBLIC"
+                    else:
+                        uri = metadata["x-cdn-uri"]
+                    info['uri'] = uri
+
+            output = [str(info[o]) for o in opts if options.get(o)]
+            if not output:
+                output = [str(info[o]) for o in opts]
+            print(", ".join(output))

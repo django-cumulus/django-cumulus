@@ -8,6 +8,7 @@ CUMULUS = {
     "AUTH_URL": "us_authurl",
     "AUTH_VERSION": "1.0",
     "AUTH_TENANT_NAME": None,
+    "AUTH_TENANT_ID": None,
     "REGION": "DFW",
     "CNAMES": None,
     "CONTAINER": None,

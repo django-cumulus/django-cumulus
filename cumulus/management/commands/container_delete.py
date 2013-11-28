@@ -21,7 +21,8 @@ class Command(BaseCommand):
             raise CommandError("Pass one and only one [container_name] as an argument")
         container_name = args[0]
         if not options.get("is_yes"):
-            is_ok = input("Permanently delete container {0}? [y|N]".format(container_name))
+            is_ok = raw_input("Permanently delete container {0}? [y|N] ".format(
+                container_name))
             if not is_ok == "y":
                 raise CommandError("Aborted")
 
