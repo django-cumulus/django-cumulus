@@ -4,8 +4,10 @@ from django.conf import settings
 
 from cumulus.storage import SwiftclientStorage, SwiftclientStaticStorage
 
+
 def _is_ssl_uri(uri):
-    return urlparse(uri).scheme == 'https'
+    return urlparse(uri).scheme == "https"
+
 
 def _get_container_urls(swiftclient_storage):
     cdn_url = swiftclient_storage.container.cdn_uri
