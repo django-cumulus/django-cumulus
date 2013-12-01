@@ -1,19 +1,21 @@
 language: python
 env:
   global:
-    - TOXENV=py26-django15
-    - TOXENV=py26-django14
-    - TOXENV=py26-django13
-    - TOXENV=py26-django12
-    - TOXENV=py27-django15
-    - TOXENV=py27-django14
-    - TOXENV=py27-django13
-    - TOXENV=py27-django12
+  - TOXENV=py26-django15
+  - TOXENV=py26-django14
+  - TOXENV=py26-django13
+  - TOXENV=py26-django12
+  - TOXENV=py27-django15
+  - TOXENV=py27-django14
+  - TOXENV=py27-django13
+  - TOXENV=py27-django12
   matrix:
-    - CLOUD_ID_TYPE=rackspace
+  - CLOUD_ID_TYPE=rackspace
+  - secure: hPqbq+lCVbOfbsQ9saBjNmXVM2Mtuflcpg3lDabTF6s/5kBxHa7i2wHHD2YRHvuiJQcnID4o7e+aZbZdhfBzkKJ6hori2MlDtvRMYJ0OPIUbB2IaHENk5oeiCy6tMlyB7eqvP2m1Yj0CFw91xc47dpthfaxLqJo10RBgL90pRMQ=
+  - secure: QMKhsDenYMegaH5tcdk3e5o5o8paFtmp5upJJD2mWdMluYRRQI7KAFDPp40YISOzCxmVnONW7ThVOrgkVWn/vX3ZGxMm7/opGid7RSE96vIt2HhekwZeaZ837v41CeY9qFBxZHpka9fxT08FXl8lJ3U6rlNL0Pu9M9mwsomwaR0=
 install:
-  - "pip install tox"
+- pip install tox
 script:
-  - "tox"
+- tox
 notifications:
-    flowdock: e09cf86a93ace282c4fb4d1c4afe100e
+  flowdock: e09cf86a93ace282c4fb4d1c4afe100e
