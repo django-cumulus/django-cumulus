@@ -7,6 +7,22 @@ from django.core.management.base import BaseCommand, CommandError
 from cumulus.settings import CUMULUS
 
 
+def cdn_enabled_for_container(container):
+    """pyrax.cf_wrapper.CFClient assumes cdn_connection.
+
+    Currently the pyrax swift client wrapper assumes that if
+    you're using pyrax, you're using the CDN support that's
+    only available with the rackspace openstack.
+    This can be removed once the following pull-request lands
+    (or is otherwise resolved):
+        https://github.com/rackspace/pyrax/pull/254
+    """
+    try:
+        return container.cdn_enabled
+    except AttributeError:
+        return False
+
+
 class Command(BaseCommand):
     help = "Create a container."
     args = "[container_name]"
@@ -35,6 +51,8 @@ class Command(BaseCommand):
         self.conn.put_container(container_name)
         if not options.get("private"):
             print("Publish container: {0}".format(container_name))
+            headers = {"X-Container-Read": ".r:*"}
+            self.conn.post_container(container_name, headers=headers)
             if CUMULUS["USE_PYRAX"]:
                 if CUMULUS["PYRAX_IDENTITY_TYPE"]:
                     pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
@@ -43,9 +61,5 @@ class Command(BaseCommand):
                 connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
                                                          public=public)
                 container = connection.get_container(container_name)
-                if not container.cdn_enabled:
+                if cdn_enabled_for_container(container):
                     container.make_public(ttl=CUMULUS["TTL"])
-            else:
-                headers = {"X-Container-Read": ".r:*"}
-                self.conn.post_container(container_name, headers=headers)
-        print("Done")

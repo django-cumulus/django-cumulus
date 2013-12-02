@@ -194,6 +194,8 @@ Below are the default settings::
     CUMULUS = {
         'API_KEY': None,
         'AUTH_URL': 'us_authurl',
+        'AUTH_TENANT_NAME': None,
+        'AUTH_TENANT_ID': None,
         'CNAMES': None,
         'CONTAINER': None,
         'SERVICENET': False,
@@ -218,7 +220,13 @@ API_KEY
 AUTH_URL
 --------
 
-Set this to the region your account is in. Valid values are ``us_authurl`` (default) and ``uk_authurl``.
+Set this to the region your account is in. Valid values are ``us_authurl`` (default) and ``uk_authurl``,
+or if you are not using rackspace, your swift auth url.
+
+AUTH_TENANT_NAME and AUTH_TENANT_ID
+-----------------------------------
+
+Required if you are using your own Openstack Swift rather than rackspaces.
 
 REGION
 ------
@@ -314,6 +322,8 @@ USE_PYRAX
 
 If True, will use the Official Rackspace's Python SDK for OpenStack/Rackspace
 APIs. Defaults to True.
+
+Note: Currently this is required even to use your own OpenStack Swift setup.
 
 PYRAX_IDENTITY_TYPE
 -------------------
