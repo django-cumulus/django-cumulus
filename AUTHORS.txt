@@ -9,3 +9,5 @@ Ordered by date of first contribution:
   Sebastian Annies
   Ferrix Hovi
   Iván Raskovsky
+  Brandon Konkle
+  Thomas Schreiber
