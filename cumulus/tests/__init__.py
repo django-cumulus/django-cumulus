@@ -166,9 +166,9 @@ class GzippedContentTests(TestCase):
 
     def setUp(self):
         # use a content big enough so we can note the gzip impact
-        self.content = "test content\n" * 10  
+        self.content = "test content\n" * 10
 
-        CUMULUS["GZIP_CONTENT_TYPES"] = ['text/plain']
+        CUMULUS["GZIP_CONTENT_TYPES"] = ["text/plain"]
 
         self.gzipped_document = SimpleUploadedFile("test.txt", self.content)
         self.custom = SimpleUploadedFile("custom.txt", self.content, content_type="custom/type")
