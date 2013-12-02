@@ -1,4 +1,5 @@
 language: python
+
 env:
   global:
   - CLOUD_ID_TYPE=rackspace
@@ -13,9 +14,13 @@ env:
   - TOXENV=py27-django14
   - TOXENV=py27-django13
   - TOXENV=py27-django12
+
 install:
 - pip install tox
+
 script:
 - tox
+
 notifications:
   flowdock: e09cf86a93ace282c4fb4d1c4afe100e
+  irc: "irc.freenode.org#django-cumulus"
