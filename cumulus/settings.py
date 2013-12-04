@@ -39,23 +39,3 @@ if CUMULUS["AUTH_URL"] == "us_authurl":
     CUMULUS["AUTH_URL"] = "https://auth.api.rackspacecloud.com/v1.0"
 elif CUMULUS["AUTH_URL"] == "uk_authurl":
     CUMULUS["AUTH_URL"] = "https://lon.auth.api.rackspacecloud.com/v1.0"
-
-# backwards compatibility for old-style cumulus settings
-if not hasattr(settings, "CUMULUS") and hasattr(settings, "CUMULUS_API_KEY"):
-    import warnings
-    warnings.warn(
-        "settings.CUMULUS_* is deprecated; use settings.CUMULUS instead.",
-        PendingDeprecationWarning
-    )
-
-    CUMULUS.update({
-        "API_KEY": getattr(settings, "CUMULUS_API_KEY"),
-        "AUTH_URL": getattr(settings, "AUTH_URL", "us_authurl"),
-        "REGION": getattr(settings, "REGION", "DFW"),
-        "CNAMES": getattr(settings, "CUMULUS_CNAMES", None),
-        "CONTAINER": getattr(settings, "CUMULUS_CONTAINER"),
-        "SERVICENET": getattr(settings, "CUMULUS_USE_SERVICENET", False),
-        "TIMEOUT": getattr(settings, "CUMULUS_TIMEOUT", 5),
-        "TTL": getattr(settings, "CUMULUS_TTL", CFClient.default_cdn_ttl),
-        "USERNAME": getattr(settings, "CUMULUS_USERNAME"),
-    })
