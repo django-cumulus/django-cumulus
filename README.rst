@@ -7,6 +7,18 @@ custom file storage class, SwiftclientStorage.
 
 .. image:: https://travis-ci.org/richleland/django-cumulus.png?branch=master
 
+Core Team
+*********
+
+This library is maintained:
+
+* Rich Leland (@richleland)
+* Ferrix Hovi (@ferrix)
+* Thomas Schreiber (@rizumu)
+
+They will be able to answer questions, give architectural guidance and merge
+pull requests.
+
 Documentation
 *************
 
