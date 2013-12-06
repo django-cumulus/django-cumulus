@@ -157,7 +157,7 @@ DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
-    'API_KEY': None,
+    "API_KEY": os.environ.get("CUMULUS_API_KEY", None),
     'AUTH_URL': 'us_authurl',
     'REGION': 'DFW',
     'CNAMES': None,
@@ -169,7 +169,7 @@ CUMULUS = {
     'TIMEOUT': 5,
     'TTL': 600,
     'USE_SSL': False,
-    'USERNAME': None,
+    "USERNAME": os.environ.get("CUMULUS_USERNAME", None),
     'INCLUDE_LIST': [],
     'EXCLUDE_LIST': [],
     'HEADERS': {},
