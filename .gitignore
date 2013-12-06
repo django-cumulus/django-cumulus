@@ -6,6 +6,7 @@
 *.py[co]
 .coverage
 .tox
+.idea
 MANIFEST
 _build/
 build/
