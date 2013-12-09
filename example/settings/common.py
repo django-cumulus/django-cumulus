@@ -119,8 +119,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     'cumulus',
-
-    'photos',
 )
 
 # A sample logging configuration. The only tangible logging

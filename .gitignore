@@ -5,6 +5,7 @@
 *.log
 *.py[co]
 .coverage
+.env
 .tox
 MANIFEST
 _build/
