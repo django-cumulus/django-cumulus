@@ -106,7 +106,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'example.urls'
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT, 'templates')
+    os.path.join(PROJECT_ROOT, 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -119,6 +119,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     'cumulus',
+    'cumulus.tests',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -155,24 +156,28 @@ DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
-    "API_KEY": os.environ.get("CUMULUS_API_KEY", None),
+    'USERNAME': os.environ.get('CUMULUS_USERNAME', None),
+    'API_KEY': os.environ.get('CUMULUS_API_KEY', None),
+
+    'USE_PYRAX': True,
+    'PYRAX_IDENTITY_TYPE': 'rackspace',
     'AUTH_URL': 'us_authurl',
     'REGION': 'DFW',
-    'CNAMES': None,
+
     'CONTAINER': 'cumulus-content-tests',
+    'STATIC_CONTAINER': 'cumulus-static-tests',
     'CONTAINER_URI': None,
     'CONTAINER_SSL_URI': None,
-    'STATIC_CONTAINER': 'cumulus-static-tests',
+    'USE_SSL': False,
+
+    'CNAMES': None,
     'SERVICENET': False,
     'TIMEOUT': 5,
     'TTL': 600,
-    'USE_SSL': False,
-    "USERNAME": os.environ.get("CUMULUS_USERNAME", None),
     'INCLUDE_LIST': [],
     'EXCLUDE_LIST': [],
     'HEADERS': {},
     'GZIP_CONTENT_TYPES': [],
-    'USE_PYRAX': True,
 }
 
 try:
