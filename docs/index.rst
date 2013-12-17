@@ -42,17 +42,17 @@ Add the following to your project's settings.py file::
         'API_KEY': 'YourAPIKey',
         'CONTAINER': 'ContainerName'
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.OpenStackStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
 
 Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you
 can do the following in your models::
 
-    from cumulus.storage import OpenStackStorage
+    from cumulus.storage import SwiftclientStorage
 
-    openstack_storage = OpenStackStorage()
+    swiftclient_storage = SwiftclientStorage()
 
     class Photo(models.Model):
-        image = models.ImageField(storage=openstack_storage, upload_to='photos')
+        image = models.ImageField(storage=swiftclient_storage, upload_to='photos')
         alt_text = models.CharField(max_length=255)
 
 Then access your files as you normally would through templates::
@@ -79,7 +79,7 @@ settings::
     CUMULUS = {
         'STATIC_CONTAINER': 'YourStaticContainer'
     }
-    STATICFILES_STORAGE = 'cumulus.storage.OpenStackStaticStorage'
+    STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
 
 Context Processor
 *****************
