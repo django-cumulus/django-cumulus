@@ -194,17 +194,23 @@ Below are the default settings::
     CUMULUS = {
         'API_KEY': None,
         'AUTH_URL': 'us_authurl',
+        'AUTH_VERSION': '1.0',
         'AUTH_TENANT_NAME': None,
         'AUTH_TENANT_ID': None,
+        'REGION': 'DFW',
         'CNAMES': None,
         'CONTAINER': None,
+        'CONTAINER_URI': None,
+        'CONTAINER_SSL_URI': None,
         'SERVICENET': False,
         'TIMEOUT': 5,
         'TTL': 86400,
         'USE_SSL': False,
         'USERNAME': None,
         'STATIC_CONTAINER': None,
-        'FILTER_LIST': [],
+        'INCLUDE_LIST': [],
+        'EXCLUDE_LIST': [],
+        'HEADERS': {},
         'GZIP_CONTENT_TYPES': [],
         'USE_PYRAX': True,
         'PYRAX_IDENTITY_TYPE': None,
@@ -222,6 +228,11 @@ AUTH_URL
 
 Set this to the region your account is in. Valid values are ``us_authurl`` (default) and ``uk_authurl``,
 or if you are not using rackspace, your swift auth url.
+
+AUTH_VERSION
+------------
+
+OpenStack auth version to use with the ``swiftclient``. Does not apply to ``pyrax`` based connections.
 
 AUTH_TENANT_NAME and AUTH_TENANT_ID
 -----------------------------------
@@ -249,6 +260,11 @@ CONTAINER
 
 **Required.** The name of the container you want files to be uploaded to.
 
+CONTAINER_URI and CONTAINER_SSL_URI
+-----------------------------------
+
+Specified URLs for the container will be used instead of looking up the URL directly from the container.
+
 FILTER_LIST
 -----------
 
@@ -275,7 +291,7 @@ The timeout to use when attempting connections over swiftclient. Defaults to 5 (
 TTL
 ---
 
-The maximum time (in seconds) until a copy of one of your files distributed into the CDN is re-fetched from your container. Defaults to 86400 (seconds) (24h), the default set by python-cloudfiles.
+The maximum time (in seconds) until a copy of one of your files distributed into the CDN is re-fetched from your container. Defaults to 86400 (seconds) (24h), the default set by pyrax.
 
 Note: After changing TTL, caching servers may not recognize the new TTL for this container until the previous TTL expires.
 
