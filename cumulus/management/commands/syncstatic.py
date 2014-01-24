@@ -116,7 +116,7 @@ class Command(NoArgsCommand):
             headers = {"X-Container-Read": ".r:*"}
             self.conn.post_container(self.container_name, headers=headers)
 
-        self.container = self.conn.get_container(self.container_name)
+        self.container = self.conn.get_container(self.container_name, full_listing=True)
 
     def handle_noargs(self, *args, **options):
         # setup
@@ -145,8 +145,13 @@ class Command(NoArgsCommand):
         # match cloud objects
         cloud_objs = self.match_cloud(self.includes, self.excludes)
 
+        remote_objects = {
+            obj['name']: datetime.datetime.strptime(obj['last_modified'],
+                                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container[1]
+        }
+
         # sync
-        self.upload_files(abspaths, relpaths)
+        self.upload_files(abspaths, relpaths, remote_objects)
         self.delete_extra_files(relpaths, cloud_objs)
 
         if not self.quiet or self.verbosity > 1:
@@ -186,24 +191,13 @@ class Command(NoArgsCommand):
                 matches.append(fname)
         return matches
 
-    def upload_files(self, abspaths, relpaths):
+    def upload_files(self, abspaths, relpaths, remote_objects):
         """
         Determines files to be uploaded and call ``upload_file`` on each.
         """
         for relpath in relpaths:
             abspath = [p for p in abspaths if p.endswith(relpath)][0]
-            try:
-                head = self.conn.head_object(self.container_name, relpath)
-            except swiftclient.client.ClientException as exception:
-                if exception.msg != "Object HEAD failed":
-                    raise exception
-                self.upload_file(abspath, relpath)
-                continue
-            cloud_datetime = (head["last-modified"] and
-                              datetime.datetime.strptime(
-                                  head["last-modified"],
-                                  "%a, %d %b %Y %H:%M:%S %Z")
-                              or None)
+            cloud_datetime = remote_objects[relpath] if relpath in remote_objects else None
             local_datetime = datetime.datetime.utcfromtimestamp(os.stat(abspath).st_mtime)
 
             if cloud_datetime and local_datetime < cloud_datetime:
@@ -211,6 +205,10 @@ class Command(NoArgsCommand):
                 if not self.quiet:
                     print("Skipped {0}: not modified.".format(relpath))
                 continue
+            if relpath in remote_objects:
+                self.update_count += 1
+            else:
+                self.create_count += 1
             self.upload_file(abspath, relpath)
 
     def upload_file(self, abspath, cloud_filename):
@@ -238,7 +236,7 @@ class Command(NoArgsCommand):
             # TODO syncheaders
             #from cumulus.storage import sync_headers
             #sync_headers(cloud_obj)
-        self.create_count += 1
+        self.upload_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
 
