@@ -207,6 +207,7 @@ class SwiftclientStorage(Storage):
                                          data=content.read(),
                                          content_type=content_type,
                                          content_encoding=content_encoding,
+                                         ttl=CUMULUS["FILE_TTL"],
                                          etag=None)
         else:
             # TODO gzipped content when using swift client
