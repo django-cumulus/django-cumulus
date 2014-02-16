@@ -166,10 +166,10 @@ class SwiftclientStorage(Storage):
         """
         Helper function to retrieve the requested Object.
         """
-        if name not in self.container.get_object_names(full_listing=True):
-            return False
-        else:
+        try:
             return self.container.get_object(name)
+        except pyrax.exceptions.NoSuchObject, swiftclient.exceptions.ClientException:
+            return None
 
     def _open(self, name, mode="rb"):
         """
