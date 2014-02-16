@@ -11,3 +11,7 @@ Ordered by date of first contribution:
   Iván Raskovsky
   Brandon Konkle
   Thomas Schreiber
+  Greg Humphreys
+  Ben Lopatin
+  Thijs Triemstra
+  rafadev
