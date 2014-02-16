@@ -26,6 +26,7 @@ CUMULUS = {
     "GZIP_CONTENT_TYPES": [],
     "USE_PYRAX": True,
     "PYRAX_IDENTITY_TYPE": None,
+    "FILE_TTL": CFClient.default_cdn_ttl
 }
 
 if hasattr(settings, "CUMULUS"):
