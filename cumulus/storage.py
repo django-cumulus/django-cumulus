@@ -199,7 +199,6 @@ class SwiftclientStorage(Storage):
             content_encoding = None
 
         if CUMULUS["USE_PYRAX"]:
-            # TODO set headers
             if content_encoding == "gzip":
                 content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
@@ -209,6 +208,16 @@ class SwiftclientStorage(Storage):
                                          content_encoding=content_encoding,
                                          ttl=CUMULUS["FILE_TTL"],
                                          etag=None)
+            if CUMULUS["HEADERS"]:
+                # set headers/object metadata
+                metadata = {}
+                for pattern, pattern_headers in HEADER_PATTERNS:
+                    if pattern.match(name):
+                        metadata.update(pattern_headers.copy())
+                self.connection.set_object_metadata(container=self.container_name,
+                                                    obj=name,
+                                                    metadata=metadata,
+                                                    prefix='')
         else:
             # TODO gzipped content when using swift client
             self.connection.put_object(self.container_name, name,
