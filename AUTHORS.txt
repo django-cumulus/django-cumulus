@@ -14,4 +14,4 @@ Ordered by date of first contribution:
   Greg Humphreys
   Ben Lopatin
   Thijs Triemstra
-  rafadev
+  Rafael Ponieman
