@@ -22,7 +22,7 @@ To install the latest release from PyPI using pip::
 
 To install the development version using pip::
 
-    pip install -e git://github.com/richleland/django-cumulus.git#egg=django-cumulus
+    pip install -e git://github.com/django-cumulus/django-cumulus.git#egg=django-cumulus
 
 Add ``cumulus`` to ``INSTALLED_APPS``::
 
@@ -362,10 +362,10 @@ Tests
 
 To run the tests, clone `the github repo`_, `install tox`_ and invoke ``tox`` from the clone's root. This will upload two very small files to your container and delete them when the tests have finished running.
 
-.. _the github repo: https://github.com/richleland/django-cumulus
+.. _the github repo: https://github.com/django-cumulus/django-cumulus
 .. _install tox: http://tox.readthedocs.org/en/latest/index.html
 
 Issues
 ******
 
-To report issues, please use the issue tracker at https://github.com/richleland/django-cumulus/issues.
+To report issues, please use the issue tracker at https://github.com/django-cumulus/django-cumulus/issues.

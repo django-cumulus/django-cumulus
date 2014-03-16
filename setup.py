@@ -19,12 +19,11 @@ setup(
     install_requires=[
         "pyrax>1.5,<1.7",
     ],
-    author="Rich Leland",
-    author_email="rich@richleland.com",
+    author="Ferrix Hovi, Thomas Schreiber",
     license="BSD",
     description=short_description,
     long_description=long_description,
-    url="https://github.com/richleland/django-cumulus/",
+    url="https://github.com/django-cumulus/django-cumulus/",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",

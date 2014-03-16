@@ -43,7 +43,7 @@ Version 0.3.6, 19 January 2011
 * Resolved `issue 5`_, adding ``CUMULUS_TIMEOUT`` setting to specify default connection timeout
 * Restructured tests to work properly with django-nose
 
-.. _issue 5: https://github.com/richleland/django-cumulus/issues/issue/5
+.. _issue 5: https://github.com/django-cumulus/django-cumulus/issues/issue/5
 
 Version 0.3.5, 07 January 2011
 ******************************
