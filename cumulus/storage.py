@@ -58,6 +58,8 @@ class SwiftclientStorage(Storage):
     region = CUMULUS["REGION"]
     connection_kwargs = {}
     container_name = CUMULUS["CONTAINER"]
+    container_uri = CUMULUS["CONTAINER_URI"]
+    container_ssl_uri = CUMULUS["CONTAINER_SSL_URI"]
     use_snet = CUMULUS["SERVICENET"]
     username = CUMULUS["USERNAME"]
     ttl = CUMULUS["TTL"]
@@ -148,12 +150,12 @@ class SwiftclientStorage(Storage):
     container = property(_get_container, _set_container)
 
     def _get_container_url(self):
-        if self.use_ssl and CUMULUS["CONTAINER_SSL_URI"]:
-            self._container_public_uri = CUMULUS["CONTAINER_SSL_URI"]
+        if self.use_ssl and self.container_ssl_uri:
+            self._container_public_uri = self.container_ssl_uri
         elif self.use_ssl:
             self._container_public_uri = self.container.cdn_ssl_uri
-        elif CUMULUS["CONTAINER_URI"]:
-            self._container_public_uri = CUMULUS["CONTAINER_URI"]
+        elif self.container_uri:
+            self._container_public_uri = self.container_uri
         else:
             self._container_public_uri = self.container.cdn_uri
         if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
@@ -313,6 +315,8 @@ class SwiftclientStaticStorage(SwiftclientStorage):
     STATICFILES_STORAGE = "cumulus.storage.SwiftclientStaticStorage".
     """
     container_name = CUMULUS["STATIC_CONTAINER"]
+    container_uri = CUMULUS["STATIC_CONTAINER_URI"]
+    container_ssl_uri = CUMULUS["STATIC_CONTAINER_SSL_URI"]
 
 
 class SwiftclientStorageFile(File):

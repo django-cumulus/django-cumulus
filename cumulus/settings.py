@@ -20,6 +20,8 @@ CUMULUS = {
     "USE_SSL": False,
     "USERNAME": None,
     "STATIC_CONTAINER": None,
+    "STATIC_CONTAINER_URI": None,
+    "STATIC_CONTAINER_SSL_URI": None,
     "INCLUDE_LIST": [],
     "EXCLUDE_LIST": [],
     "HEADERS": {},
