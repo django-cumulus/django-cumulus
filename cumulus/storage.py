@@ -213,7 +213,7 @@ class SwiftclientStorage(Storage):
         headers = get_headers(name, content_type)
 
         if CUMULUS["USE_PYRAX"]:
-            if headers["Content-Encoding"] == "gzip":
+            if headers.get("Content-Encoding") == "gzip":
                 content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
                                          obj_name=name,
