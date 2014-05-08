@@ -40,9 +40,13 @@ Add the following to your project's settings.py file::
     CUMULUS = {
         'USERNAME': 'YourUsername',
         'API_KEY': 'YourAPIKey',
-        'CONTAINER': 'ContainerName'
+        'CONTAINER': 'ContainerName',
+        'PYRAX_IDENTITY_TYPE': 'rackspace'
     }
     DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+
+The ``PYRAX_IDENTITY_TYPE`` parameter can either be ``rackspace`` or ``keystone``
+depending on whether you use Rackspace or OpenStack respectively.
 
 Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you
 can do the following in your models::
