@@ -14,6 +14,31 @@ from cumulus.settings import CUMULUS
 HEADER_PATTERNS = tuple((re.compile(p), h) for p, h in CUMULUS.get("HEADERS", {}))
 
 
+def get_content_type(name, content):
+    """
+    Checks if the content_type is already set.
+    Otherwise uses the mimetypes library to guess.
+    """
+    if hasattr(content, "content_type"):
+        content_type = content.content_type
+    else:
+        mime_type, encoding = mimetypes.guess_type(name)
+        content_type = mime_type
+    return content_type
+
+
+def get_headers(name, content_type):
+    headers = {"Content-Type": content_type}
+    # gzip the file if its of the right content type
+    if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
+        headers["Content-Encoding"] = "gzip"
+    if CUMULUS["HEADERS"]:
+        for pattern, pattern_headers in HEADER_PATTERNS:
+            if pattern.match(name):
+                headers.update(pattern_headers.copy())
+    return headers
+
+
 def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
     """
     Overwrites the given cloud_obj's headers with the ones given as ``headers`
@@ -184,42 +209,24 @@ class SwiftclientStorage(Storage):
         Uses the Swiftclient service to write ``content`` to a remote
         file (called ``name``).
         """
-        # Checks if the content_type is already set.
-        # Otherwise uses the mimetypes library to guess.
-        if hasattr(content.file, "content_type"):
-            content_type = content.file.content_type
-        else:
-            mime_type, encoding = mimetypes.guess_type(name)
-            content_type = mime_type
-
-        headers = {"Content-Type": content_type}
-
-        # gzip the file if its of the right content type
-        if content_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-            content_encoding = headers["Content-Encoding"] = "gzip"
-        else:
-            content_encoding = None
+        content_type = get_content_type(name, content.file)
+        headers = get_headers(name, content_type)
 
         if CUMULUS["USE_PYRAX"]:
-            if content_encoding == "gzip":
+            if headers["Content-Encoding"] == "gzip":
                 content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
                                          obj_name=name,
                                          data=content.read(),
                                          content_type=content_type,
-                                         content_encoding=content_encoding,
+                                         content_encoding=headers.get("Content-Encoding", None),
                                          ttl=CUMULUS["FILE_TTL"],
                                          etag=None)
-            if CUMULUS["HEADERS"]:
-                # set headers/object metadata
-                metadata = {}
-                for pattern, pattern_headers in HEADER_PATTERNS:
-                    if pattern.match(name):
-                        metadata.update(pattern_headers.copy())
-                self.connection.set_object_metadata(container=self.container_name,
-                                                    obj=name,
-                                                    metadata=metadata,
-                                                    prefix='')
+            # set headers/object metadata
+            self.connection.set_object_metadata(container=self.container_name,
+                                                obj=name,
+                                                metadata=headers,
+                                                prefix='')
         else:
             # TODO gzipped content when using swift client
             self.connection.put_object(self.container_name, name,
