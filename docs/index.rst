@@ -1,17 +1,15 @@
 django-cumulus
 ==============
 
-The aim of django-cumulus is to provide a set of tools to utilize the
-swiftclient api through Django. It currently includes a custom file
-storage class, SwiftclientFilesStorage.
+`django-cumulus` provides a set of tools to utilize the
+python-swiftclient and Rackspace cloud files api from Django. It
+includes a custom file storage class, SwiftclientFilesStorage.
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
    changelog
-
-.. comment: split here
 
 Installation
 ************
@@ -41,7 +39,7 @@ Add the following to your project's settings.py file::
         'USERNAME': 'YourUsername',
         'API_KEY': 'YourAPIKey',
         'CONTAINER': 'ContainerName',
-        'PYRAX_IDENTITY_TYPE': 'rackspace'
+        'PYRAX_IDENTITY_TYPE': 'rackspace',
     }
     DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
 
