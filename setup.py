@@ -7,7 +7,6 @@ from setuptools import setup, find_packages
 setup(
     name="django-cumulus",
     version=__import__("cumulus").get_version().replace(" ", "-"),
-    url="http://django-cumulus.readthedocs.org/",
     packages=find_packages(),
     install_requires=[
         "pyrax>1.5,<1.7",
