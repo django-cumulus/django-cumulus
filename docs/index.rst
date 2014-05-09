@@ -1,15 +1,26 @@
 django-cumulus
 ==============
 
-`django-cumulus` provides a set of tools to utilize the
-python-swiftclient and Rackspace cloud files api from Django. It
+
+``django-cumulus`` provides a set of tools to utilize the
+`python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
 includes a custom file storage class, SwiftclientFilesStorage.
+
+More documentation about the usage and installation of ``django-cumulus``
+can be found on `django-cumulus.readthedocs.org`_.
+
+The source code for ``django-cumulus`` can be found and contributed to on
+`github.com/django-cumulus/django-cumulus`_. There you can also `file issues`_.
+
+To find out what's new in this version of django-cumulus, please see
+`the changelog`_
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
    changelog
+
 
 Installation
 ************
@@ -29,6 +40,7 @@ Add ``cumulus`` to ``INSTALLED_APPS``::
         'cumulus',
         ...
     )
+
 
 Usage
 *****
@@ -71,10 +83,11 @@ Or through Django's default ImageField or FileField api::
     >>> photo.image.url
     http://c0000000.cdn.cloudfiles.rackspacecloud.com/photos/some-image.jpg
 
+
 Static media
 ************
 
-django-cumulus will work with Django's built-in ``collectstatic``
+``django-cumulus`` will work with Django's built-in ``collectstatic``
 management command out of the box. You need to supply a few additional
 settings::
 
@@ -83,10 +96,11 @@ settings::
     }
     STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
 
+
 Context Processor
 *****************
 
-django-cumulus includes an optional context_processor for accessing
+``django-cumulus`` includes an optional context_processor for accessing
 the full CDN_URL of any container files from your templates.
 
 This is useful when you're using Swiftclient to serve you static media
@@ -106,8 +120,10 @@ Now in your templates you can use {{ CDN_URL }} to output the full path to local
 
     <link rel="stylesheet" href="{{ CDN_URL }}css/style.css">
 
+
 Management commands
 *******************
+
 
 syncstatic
 ----------
@@ -135,6 +151,7 @@ For a full list of available options::
 
     django-admin.py help syncstatic
 
+
 container_create
 ----------------
 
@@ -147,6 +164,7 @@ Invoke the management command::
 For a full list of available options::
 
     django-admin.py help container_create
+
 
 container_delete
 ----------------
@@ -161,6 +179,7 @@ For a full list of available options::
 
     django-admin.py help container_delete
 
+
 container_info
 --------------
 
@@ -174,6 +193,7 @@ For a full list of available options::
 
     django-admin.py help container_info
 
+
 container_list
 --------------
 
@@ -186,6 +206,7 @@ Invoke the management command::
 For a full list of available options::
 
     django-admin.py help container_list
+
 
 Settings
 ********
@@ -217,6 +238,7 @@ Below are the default settings::
         'PYRAX_IDENTITY_TYPE': None,
     }
 
+
 API_KEY
 -------
 
@@ -224,26 +246,31 @@ API_KEY
 
 .. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
 
+
 AUTH_URL
 --------
 
 Set this to the region your account is in. Valid values are ``us_authurl`` (default) and ``uk_authurl``,
 or if you are not using rackspace, your swift auth url.
 
+
 AUTH_VERSION
 ------------
 
 OpenStack auth version to use with the ``swiftclient``. Does not apply to ``pyrax`` based connections.
+
 
 AUTH_TENANT_NAME and AUTH_TENANT_ID
 -----------------------------------
 
 Required if you are using your own Openstack Swift rather than rackspaces.
 
+
 REGION
 ------
 
 Set this to the regional datacenter to connect to. Valid values are ``DFW`` (default) ``ORD`` and ``LON``.
+
 
 CNAMES
 ------
@@ -256,16 +283,19 @@ A mapping of ugly Rackspace URLs to CNAMEd URLs. Example::
         }
     }
 
+
 CONTAINER
 ---------
 
 **Required.** The name of the container you want files to be uploaded to.
+
 
 CONTAINER_URI and CONTAINER_SSL_URI
 -----------------------------------
 
 Specified URLs for the container will be used instead of looking up
 the URL directly from the container.
+
 
 INCLUDE_LIST
 ------------
@@ -274,12 +304,14 @@ A list of glob-style regular expresions to match files or directories
 to include when using the ``syncstatic`` management command. Defaults
 to an empty list.
 
+
 EXCLUDE_LIST
 ------------
 
 A list of glob-style regular expresions to match files or directories
 to exclude when using the ``syncstatic`` management command. Defaults
 to an empty list.
+
 
 SERVICENET
 ----------
@@ -289,15 +321,18 @@ Specifies whether to use Rackspace's private network (True) or not
 True in production as you will not incur data transfer fees between
 your server(s) and the cdn on the private network.
 
+
 STATIC_CONTAINER
 ----------------
 
-When using Django's ``collectstatic`` or django-cumulus's ``syncstatic`` command, this is the name of the container you want static files to be uploaded to.
+When using Django's ``collectstatic`` or ``django-cumulus``'s ``syncstatic`` command, this is the name of the container you want static files to be uploaded to.
+
 
 TIMEOUT
 -------
 
 The timeout to use when attempting connections over swiftclient. Defaults to 5 (seconds).
+
 
 TTL
 ---
@@ -306,17 +341,19 @@ The maximum time (in seconds) until a copy of one of your files distributed into
 
 Note: After changing TTL, caching servers may not recognize the new TTL for this container until the previous TTL expires.
 
+
 USE_SSL
 -------
 
 Whether or not to retrieve the container URL as http (False) or https (True).
 
+
 USERNAME
 --------
 
+
 **Required.** This is your API username. You can obtain it from the `Rackspace Management Console`_.
 
-.. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
 
 HEADERS
 -------
@@ -332,6 +369,7 @@ access webfonts across domains::
        )
    }
 
+
 GZIP_CONTENT_TYPES
 ------------------
 
@@ -344,6 +382,7 @@ Set which content types must be gzipped before sent to the cloud:
 The files matching these content types would be gzipped and will have *gzip*
 content-encoding.
 
+
 USE_PYRAX
 ---------
 
@@ -351,6 +390,7 @@ If True, will use the Official Rackspace's Python SDK for OpenStack/Rackspace
 APIs. Defaults to True.
 
 Note: Currently this is required even to use your own OpenStack Swift setup.
+
 
 PYRAX_IDENTITY_TYPE
 -------------------
@@ -362,21 +402,40 @@ You **can** specify it through cumulus settings and if you don't, you **must**
 do it through other means (like environment variables or configuration files,
 see Pyrax documentation for more details).
 
+
 Requirements
 ************
 
 * Django>=1.2
-* pyrax==1.4.5
+* pyrax>1.5,<1.7
+
 
 Tests
 *****
 
 To run the tests, clone `the github repo`_, `install tox`_ and invoke ``tox`` from the clone's root. This will upload two very small files to your container and delete them when the tests have finished running.
 
-.. _the github repo: https://github.com/django-cumulus/django-cumulus
-.. _install tox: http://tox.readthedocs.org/en/latest/index.html
 
 Issues
 ******
 
-To report issues, please use the issue tracker at https://github.com/django-cumulus/django-cumulus/issues.
+The source code for ``django-cumulus`` can be found and contributed to on
+`github.com/django-cumulus/django-cumulus`_. There you can also `file issues`_.
+
+
+Changelog
+*********
+
+To find out what's new in this version of django-cumulus, please see
+`the changelog`_
+
+
+.. _github.com/django-cumulus/django-cumulus: https://github.com/django-cumulus/django-cumulus/
+.. _python-swiftclient: https://pypi.python.org/pypi/python-swiftclient/
+.. _Rackspace Cloud Files API: http://www.rackspace.com/cloud/files/api/
+.. _file issues: https://github.com/django-cumulus/django-cumulus/issues/
+.. _in-development version: https://github.com/django-cumulus/django-cumulus/tarball/master#egg=django-cumulus-dev
+.. _the changelog: http://django-cumulus.readthedocs.org/en/latest/changelog.html
+.. _the github repo: https://github.com/django-cumulus/django-cumulus
+.. _install tox: http://tox.readthedocs.org/en/latest/index.html
+.. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
