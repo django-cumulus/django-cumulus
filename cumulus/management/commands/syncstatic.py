@@ -13,7 +13,7 @@ from django.core.management.base import CommandError, NoArgsCommand
 
 
 from cumulus.settings import CUMULUS
-from cumulus.storage import get_gzipped_contents
+from cumulus.storage import get_headers, get_content_type, get_gzipped_contents
 
 
 class Command(NoArgsCommand):
@@ -216,23 +216,25 @@ class Command(NoArgsCommand):
         Uploads a file to the container.
         """
         if not self.test_run:
-            headers = None
-            contents = open(abspath, "rb")
-            size = os.stat(abspath).st_size
+            content = open(abspath, "rb")
+            content_type = get_content_type(cloud_filename, content)
+            headers = get_headers(cloud_filename, content_type)
 
-            mime_type, encoding = mimetypes.guess_type(abspath)
-            if mime_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-                headers = {"Content-Encoding": "gzip"}
-                contents = get_gzipped_contents(contents)
-                size = contents.size
+            if headers.get("Content-Encoding") == "gzip":
+                content = get_gzipped_contents(content)
+                size = content.size
+            else:
+                size = os.stat(abspath).st_size
 
-            self.conn.put_object(container=self.container_name,
-                                 obj=cloud_filename,
-                                 contents=contents,
-                                 content_length=size,
-                                 etag=None,
-                                 content_type=mime_type,
-                                 headers=headers)
+            self.conn.put_object(
+                container=self.container_name,
+                obj=cloud_filename,
+                contents=content,
+                content_length=size,
+                etag=None,
+                content_type=content_type,
+                headers=headers)
+
             # TODO syncheaders
             #from cumulus.storage import sync_headers
             #sync_headers(cloud_obj)
