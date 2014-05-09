@@ -34,9 +34,6 @@ CUMULUS = {
 if hasattr(settings, "CUMULUS"):
     CUMULUS.update(settings.CUMULUS)
 
-if "FILTER_LIST" in settings.CUMULUS.keys():
-    CUMULUS["EXCLUDE_LIST"] = CUMULUS
-
 # set the full rackspace auth_url
 if CUMULUS["AUTH_URL"] == "us_authurl":
     CUMULUS["AUTH_URL"] = "https://auth.api.rackspacecloud.com/v1.0"

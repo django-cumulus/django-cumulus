@@ -121,9 +121,8 @@ the command.
 Add the following required settings::
 
     CUMULUS = {
-        'STATIC_CONTAINER': 'MyStaticContainer', # the name of the container to sync with
-        'SERVICENET': False, # whether to use rackspace's internal private network
-        'FILTER_LIST': [] # a list of files to exclude from sync
+        'STATIC_CONTAINER': 'MyStaticContainer',  # the name of the container to sync with
+        'SERVICENET': False,  # whether to use rackspace's internal private network
     }
 
 Invoke the management command::
@@ -267,12 +266,22 @@ CONTAINER
 CONTAINER_URI and CONTAINER_SSL_URI
 -----------------------------------
 
-Specified URLs for the container will be used instead of looking up the URL directly from the container.
+Specified URLs for the container will be used instead of looking up
+the URL directly from the container.
 
-FILTER_LIST
------------
+INCLUDE_LIST
+------------
 
-A list of items to exclude when using the ``syncstatic`` management command. Defaults to an empty list.
+A list of glob-style regular expresions to match files or directories
+to include when using the ``syncstatic`` management command. Defaults
+to an empty list.
+
+EXCLUDE_LIST
+------------
+
+A list of glob-style regular expresions to match files or directories
+to exclude when using the ``syncstatic`` management command. Defaults
+to an empty list.
 
 SERVICENET
 ----------
