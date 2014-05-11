@@ -407,7 +407,7 @@ Requirements
 ************
 
 * Django>=1.2
-* pyrax>1.5,<1.7
+* pyrax>1.5,<1.9
 
 
 Tests
