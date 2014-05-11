@@ -3,7 +3,11 @@ import pyrax
 import re
 import swiftclient
 from gzip import GzipFile
-from StringIO import StringIO
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
