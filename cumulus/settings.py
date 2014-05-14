@@ -28,7 +28,11 @@ CUMULUS = {
     "GZIP_CONTENT_TYPES": [],
     "USE_PYRAX": True,
     "PYRAX_IDENTITY_TYPE": None,
-    "FILE_TTL": CFClient.default_cdn_ttl
+    "FILE_TTL": CFClient.default_cdn_ttl,
+    'PUBLIC': True,
+    'X_ACCOUNT_META_TEMP_URL_KEY': None,
+    'X_STORAGE_URL': None,
+    'X_TEMP_URL_TIMEOUT': 600
 }
 
 if hasattr(settings, "CUMULUS"):

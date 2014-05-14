@@ -94,6 +94,10 @@ class SwiftclientStorage(Storage):
     ttl = CUMULUS["TTL"]
     use_ssl = CUMULUS["USE_SSL"]
     use_pyrax = CUMULUS["USE_PYRAX"]
+    public = CUMULUS['PUBLIC']
+    x_meta_temp_url_key = CUMULUS['X_ACCOUNT_META_TEMP_URL_KEY']
+    x_storage_url = CUMULUS['X_STORAGE_URL']
+    x_temp_url_timeout = CUMULUS['X_TEMP_URL_TIMEOUT']
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None, container_uri=None):
@@ -271,7 +275,25 @@ class SwiftclientStorage(Storage):
         Returns an absolute URL where the content of each file can be
         accessed directly by a web browser.
         """
-        return "{0}/{1}".format(self.container_url, name)
+        if self.public:
+            return "{0}/{1}".format(self.container_url, name)
+        else:
+            return self._get_temp_url(name)
+
+    def _get_temp_url(self, name):
+        """
+        Returns an absolute, temporary URL where the file's contents can be
+        accessed directly by a web browser.
+        """
+        method = 'GET'
+        expires = int(time() + self.x_temp_url_timeout)
+        key = self.x_meta_temp_url_key
+        base = 'https://storage101.dfw1.clouddrive.com'
+        path = '{0}/{1}/{2}'.format(self.x_storage_url, self.container_name, name)
+        hmac_body = '{0}\n{1}\n{2}'.format(method, expires, path)
+        sig = hmac.new(key, hmac_body, sha).hexdigest()
+        return  '{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(base, path, sig, 
+                                                                expires)
 
     def listdir(self, path):
         """
