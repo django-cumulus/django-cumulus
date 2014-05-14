@@ -3,7 +3,12 @@ import pyrax
 import re
 import swiftclient
 from gzip import GzipFile
-
+import hmac
+from time import time
+try:
+    from haslib import sha1 as sha
+except:
+    import sha
 try:
     from cStringIO import StringIO
 except ImportError:
