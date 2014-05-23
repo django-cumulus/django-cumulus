@@ -336,6 +336,7 @@ class SwiftclientStorageFile(File):
     def __init__(self, storage, name, *args, **kwargs):
         self._storage = storage
         self._pos = 0
+        self._chunks = None
         super(SwiftclientStorageFile, self).__init__(file=None, name=name,
                                                      *args, **kwargs)
 
@@ -367,24 +368,36 @@ class SwiftclientStorageFile(File):
 
     file = property(_get_file, _set_file)
 
-    def read(self, chunk_size=-1):
+    def read(self, chunk_size=None):
         """
         Reads specified chunk_size or the whole file if chunk_size is None.
 
         If reading the whole file and the content-encoding is gzip, also
         gunzip the read content.
+
+        If chunk_size is provided, the same chunk_size will be used in all
+        further read() calls until the file is reopened or seek() is called.
         """
-        if self._pos == self._get_size() or chunk_size == 0:
+        if self._pos >= self._get_size() or chunk_size == 0:
             return ""
 
-        if chunk_size < 0:
+        if chunk_size is None and self._chunks is None:
             meta, data = self.file.get(include_meta=True)
             if meta.get("content-encoding", None) == "gzip":
                 zbuf = StringIO(data)
                 zfile = GzipFile(mode="rb", fileobj=zbuf)
                 data = zfile.read()
         else:
-            data = self.file.get(chunk_size=chunk_size).next()
+            if self._chunks is None:
+                # When reading by chunks, we're supposed to read the whole file
+                # before calling get() again.
+                self._chunks = self.file.get(chunk_size=chunk_size)
+
+            try:
+                data = self._chunks.next()
+            except StopIteration:
+                data = ""
+
         self._pos += len(data)
         return data
 
@@ -401,9 +414,11 @@ class SwiftclientStorageFile(File):
         Opens the cloud file object.
         """
         self._pos = 0
+        self._chunks = None
 
     def close(self, *args, **kwargs):
         self._pos = 0
+        self._chunks = None
 
     @property
     def closed(self):
@@ -411,6 +426,7 @@ class SwiftclientStorageFile(File):
 
     def seek(self, pos):
         self._pos = pos
+        self._chunks = None
 
 
 class ThreadSafeSwiftclientStorage(SwiftclientStorage):
