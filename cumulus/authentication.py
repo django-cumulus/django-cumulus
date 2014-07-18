@@ -127,5 +127,7 @@ class Auth(object):
         """
         try:
             return self.container.get_object(name)
-        except pyrax.exceptions.NoSuchObject, swiftclient.exceptions.ClientException:
+        except pyrax.exceptions.NoSuchObject:
+            return None
+        except swiftclient.exceptions.ClientException:
             return None
