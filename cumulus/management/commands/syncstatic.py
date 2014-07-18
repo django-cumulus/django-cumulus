@@ -88,14 +88,14 @@ class Command(NoArgsCommand):
         The container will be created and/or made public using the
         pyrax api if not already so.
         """
-        self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
+        self._connection = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
                                            user=CUMULUS["USERNAME"],
                                            key=CUMULUS["API_KEY"],
                                            snet=CUMULUS["SERVICENET"],
                                            auth_version=CUMULUS["AUTH_VERSION"],
                                            tenant_name=CUMULUS["AUTH_TENANT_NAME"])
         try:
-            self.conn.head_container(self.container_name)
+            self._connection.head_container(self.container_name)
         except swiftclient.client.ClientException as exception:
             if exception.msg == "Container HEAD failed":
                 call_command("container_create", self.container_name)
@@ -114,9 +114,9 @@ class Command(NoArgsCommand):
                 container.make_public(ttl=CUMULUS["TTL"])
         else:
             headers = {"X-Container-Read": ".r:*"}
-            self.conn.post_container(self.container_name, headers=headers)
+            self._connection.post_container(self.container_name, headers=headers)
 
-        self.container = self.conn.get_container(self.container_name, full_listing=True)
+        self.container = self._connection.get_container(self.container_name, full_listing=True)
 
     def handle_noargs(self, *args, **options):
         # setup
@@ -226,7 +226,7 @@ class Command(NoArgsCommand):
             else:
                 size = os.stat(abspath).st_size
 
-            self.conn.put_object(
+            self._connection.put_object(
                 container=self.container_name,
                 obj=cloud_filename,
                 contents=content,
@@ -258,7 +258,7 @@ class Command(NoArgsCommand):
         """
         Deletes an object from the container.
         """
-        self.conn.delete_object(container=self.container_name,
+        self._connection.delete_object(container=self.container_name,
                                 obj=cloud_obj)
 
     def wipe_container(self):
@@ -271,7 +271,7 @@ class Command(NoArgsCommand):
             if not self.quiet or self.verbosity > 1:
                 print("Deleting {0} objects...".format(len(self.container[1])))
             for cloud_obj in self.container[1]:
-                self.conn.delete_object(self.container_name, cloud_obj["name"])
+                self._connection.delete_object(self.container_name, cloud_obj["name"])
 
     def print_tally(self):
         """
