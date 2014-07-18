@@ -3,7 +3,6 @@ import optparse
 from django.core.management.base import BaseCommand
 
 from cumulus.authentication import Auth
-from cumulus.settings import CUMULUS
 
 
 class Command(BaseCommand):

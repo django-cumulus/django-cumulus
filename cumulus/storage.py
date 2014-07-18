@@ -1,7 +1,6 @@
 import mimetypes
 import pyrax
 import re
-import swiftclient
 from gzip import GzipFile
 
 try:
@@ -89,7 +88,6 @@ class SwiftclientStorage(Auth, Storage):
     ttl = CUMULUS["TTL"]
     file_ttl = CUMULUS["FILE_TTL"]
     use_ssl = CUMULUS["USE_SSL"]
-
 
     def _open(self, name, mode="rb"):
         """
