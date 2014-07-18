@@ -1,14 +1,10 @@
 import datetime
 import fnmatch
-import mimetypes
 import optparse
 import os
-import pyrax
 import re
-import swiftclient
 
 from django.conf import settings
-from django.core.management import call_command
 from django.core.management.base import CommandError, NoArgsCommand
 
 

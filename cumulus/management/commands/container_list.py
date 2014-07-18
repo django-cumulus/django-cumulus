@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from cumulus.authentication import Auth
-from cumulus.settings import CUMULUS
 
 
 class Command(BaseCommand):
