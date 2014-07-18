@@ -36,6 +36,6 @@ if hasattr(settings, "CUMULUS"):
 
 # set the full rackspace auth_url
 if CUMULUS["AUTH_URL"] == "us_authurl":
-    CUMULUS["AUTH_URL"] = "https://identity.api.rackspacecloud.com/v2.0"
+    CUMULUS["AUTH_URL"] = "https://auth.api.rackspacecloud.com/v1.0"
 elif CUMULUS["AUTH_URL"] == "uk_authurl":
-    CUMULUS["AUTH_URL"] = "https://lon.identity.api.rackspacecloud.com/v2.0"
+    CUMULUS["AUTH_URL"] = "https://lon.auth.api.rackspacecloud.com/v1.0"
