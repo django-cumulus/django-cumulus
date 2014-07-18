@@ -6,7 +6,7 @@ from django.conf import settings
 CUMULUS = {
     "API_KEY": None,
     "AUTH_URL": "us_authurl",
-    "AUTH_VERSION": "1.0",
+    "AUTH_VERSION": "2.0",
     "AUTH_TENANT_NAME": None,
     "AUTH_TENANT_ID": None,
     "REGION": "DFW",
