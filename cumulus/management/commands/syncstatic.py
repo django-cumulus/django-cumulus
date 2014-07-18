@@ -12,6 +12,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError, NoArgsCommand
 
 
+from cumulus.authentication import Auth
 from cumulus.settings import CUMULUS
 from cumulus.storage import get_headers, get_content_type, get_gzipped_contents
 
@@ -81,47 +82,11 @@ class Command(NoArgsCommand):
         self.skip_count = 0
         self.delete_count = 0
 
-    def connect_container(self):
-        """
-        Connects to a container using the swiftclient api.
-
-        The container will be created and/or made public using the
-        pyrax api if not already so.
-        """
-        self._connection = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
-                                           user=CUMULUS["USERNAME"],
-                                           key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"],
-                                           auth_version=CUMULUS["AUTH_VERSION"],
-                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
-        try:
-            self._connection.head_container(self.container_name)
-        except swiftclient.client.ClientException as exception:
-            if exception.msg == "Container HEAD failed":
-                call_command("container_create", self.container_name)
-            else:
-                raise
-
-        if CUMULUS["USE_PYRAX"]:
-            if CUMULUS["PYRAX_IDENTITY_TYPE"]:
-                pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
-            public = not CUMULUS["SERVICENET"]
-            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                     public=public)
-            container = connection.get_container(self.container_name)
-            if not container.cdn_enabled:
-                container.make_public(ttl=CUMULUS["TTL"])
-        else:
-            headers = {"X-Container-Read": ".r:*"}
-            self._connection.post_container(self.container_name, headers=headers)
-
-        self.container = self._connection.get_container(self.container_name, full_listing=True)
-
     def handle_noargs(self, *args, **options):
         # setup
         self.set_options(options)
-        self.connect_container()
+        self._connection = Auth()._get_connection()
+        self.container = self._connection.get_container(self.container_name)
 
         # wipe first
         if self.wipe:
@@ -146,8 +111,9 @@ class Command(NoArgsCommand):
         cloud_objs = self.match_cloud(self.includes, self.excludes)
 
         remote_objects = {
-            obj['name']: datetime.datetime.strptime(obj['last_modified'],
-                                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container[1]
+            obj.name: datetime.datetime.strptime(
+                obj.last_modified,
+                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container.get_objects()
         }
 
         # sync
@@ -161,7 +127,7 @@ class Command(NoArgsCommand):
         """
         Returns the cloud objects that match the include and exclude patterns.
         """
-        cloud_objs = [cloud_obj["name"] for cloud_obj in self.container[1]]
+        cloud_objs = [cloud_obj.name for cloud_obj in self.container.get_objects()]
         includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
         excludes_pattern = r"|".join([fnmatch.translate(x) for x in excludes]) or r"$."
         excludes = [o for o in cloud_objs if re.match(excludes_pattern, o)]
@@ -225,19 +191,17 @@ class Command(NoArgsCommand):
                 size = content.size
             else:
                 size = os.stat(abspath).st_size
-
-            self._connection.put_object(
-                container=self.container_name,
-                obj=cloud_filename,
-                contents=content,
-                content_length=size,
-                etag=None,
+            self.container.create(
+                obj_name=cloud_filename,
+                data=content,
                 content_type=content_type,
-                headers=headers)
+                content_length=size,
+                content_encoding=headers.get("Content-Encoding", None),
+                headers=headers,
+                ttl=CUMULUS["FILE_TTL"],
+                etag=None,
+            )
 
-            # TODO syncheaders
-            #from cumulus.storage import sync_headers
-            #sync_headers(cloud_obj)
         self.upload_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
@@ -258,20 +222,21 @@ class Command(NoArgsCommand):
         """
         Deletes an object from the container.
         """
-        self._connection.delete_object(container=self.container_name,
-                                obj=cloud_obj)
+        self._connection.delete_object(
+            container=self.container_name,
+            obj=cloud_obj,
+        )
 
     def wipe_container(self):
         """
         Completely wipes out the contents of the container.
         """
         if self.test_run:
-            print("Wipe would delete {0} objects.".format(len(self.container[1])))
+            print("Wipe would delete {0} objects.".format(len(self.container.object_count)))
         else:
             if not self.quiet or self.verbosity > 1:
-                print("Deleting {0} objects...".format(len(self.container[1])))
-            for cloud_obj in self.container[1]:
-                self._connection.delete_object(self.container_name, cloud_obj["name"])
+                print("Deleting {0} objects...".format(len(self.container.object_count)))
+            self._connection.delete_all_objects()
 
     def print_tally(self):
         """

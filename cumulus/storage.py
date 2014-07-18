@@ -12,6 +12,7 @@ except ImportError:
 from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
 
+from cumulus.authentication import Auth
 from cumulus.settings import CUMULUS
 
 
@@ -77,130 +78,18 @@ def get_gzipped_contents(input_file):
     return ContentFile(zbuf.getvalue())
 
 
-class SwiftclientStorage(Storage):
+class SwiftclientStorage(Auth, Storage):
     """
     Custom storage for Swiftclient.
     """
     default_quick_listdir = True
-    api_key = CUMULUS["API_KEY"]
-    auth_url = CUMULUS["AUTH_URL"]
-    region = CUMULUS["REGION"]
-    connection_kwargs = {}
     container_name = CUMULUS["CONTAINER"]
     container_uri = CUMULUS["CONTAINER_URI"]
     container_ssl_uri = CUMULUS["CONTAINER_SSL_URI"]
-    use_snet = CUMULUS["SERVICENET"]
-    username = CUMULUS["USERNAME"]
     ttl = CUMULUS["TTL"]
+    file_ttl = CUMULUS["FILE_TTL"]
     use_ssl = CUMULUS["USE_SSL"]
-    use_pyrax = CUMULUS["USE_PYRAX"]
 
-    def __init__(self, username=None, api_key=None, container=None,
-                 connection_kwargs=None, container_uri=None):
-        """
-        Initializes the settings for the connection and container.
-        """
-        if username is not None:
-            self.username = username
-        if api_key is not None:
-            self.api_key = api_key
-        if container is not None:
-            self.container_name = container
-        if connection_kwargs is not None:
-            self.connection_kwargs = connection_kwargs
-        # connect
-        if CUMULUS["USE_PYRAX"]:
-            if CUMULUS["PYRAX_IDENTITY_TYPE"]:
-                pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
-            if CUMULUS["AUTH_URL"]:
-                pyrax.set_setting("auth_endpoint", CUMULUS["AUTH_URL"])
-            if CUMULUS["AUTH_TENANT_ID"]:
-                pyrax.set_setting("tenant_id", CUMULUS["AUTH_TENANT_ID"])
-
-            pyrax.set_credentials(self.username, self.api_key)
-
-    def __getstate__(self):
-        """
-        Return a picklable representation of the storage.
-        """
-        return {
-            "username": self.username,
-            "api_key": self.api_key,
-            "container_name": self.container_name,
-            "use_snet": self.use_snet,
-            "connection_kwargs": self.connection_kwargs
-        }
-
-    def _get_connection(self):
-        if not hasattr(self, "_connection"):
-            if CUMULUS["USE_PYRAX"]:
-                public = not self.use_snet  # invert
-                self._connection = pyrax.connect_to_cloudfiles(region=self.region,
-                                                               public=public)
-            else:
-                self._connection = swiftclient.Connection(
-                    authurl=CUMULUS["AUTH_URL"],
-                    user=CUMULUS["USERNAME"],
-                    key=CUMULUS["API_KEY"],
-                    snet=CUMULUS["SERVICENET"],
-                    auth_version=CUMULUS["AUTH_VERSION"],
-                    tenant_name=CUMULUS["AUTH_TENANT_NAME"],
-                )
-        return self._connection
-
-    def _set_connection(self, value):
-        self._connection = value
-
-    connection = property(_get_connection, _set_connection)
-
-    def _get_container(self):
-        """
-        Gets or creates the container.
-        """
-        if not hasattr(self, "_container"):
-            if CUMULUS["USE_PYRAX"]:
-                self._container = self.connection.create_container(self.container_name)
-            else:
-                self._container = None
-        return self._container
-
-    def _set_container(self, container):
-        """
-        Sets the container (and, if needed, the configured TTL on it), making
-        the container publicly available.
-        """
-        if CUMULUS["USE_PYRAX"]:
-            if container.cdn_ttl != self.ttl or not container.cdn_enabled:
-                container.make_public(ttl=self.ttl)
-            if hasattr(self, "_container_public_uri"):
-                delattr(self, "_container_public_uri")
-        self._container = container
-
-    container = property(_get_container, _set_container)
-
-    def _get_container_url(self):
-        if self.use_ssl and self.container_ssl_uri:
-            self._container_public_uri = self.container_ssl_uri
-        elif self.use_ssl:
-            self._container_public_uri = self.container.cdn_ssl_uri
-        elif self.container_uri:
-            self._container_public_uri = self.container_uri
-        else:
-            self._container_public_uri = self.container.cdn_uri
-        if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
-            self._container_public_uri = CUMULUS["CNAMES"][self._container_public_uri]
-        return self._container_public_uri
-
-    container_url = property(_get_container_url)
-
-    def _get_object(self, name):
-        """
-        Helper function to retrieve the requested Object.
-        """
-        try:
-            return self.container.get_object(name)
-        except pyrax.exceptions.NoSuchObject, swiftclient.exceptions.ClientException:
-            return None
 
     def _open(self, name, mode="rb"):
         """
@@ -216,7 +105,7 @@ class SwiftclientStorage(Storage):
         content_type = get_content_type(name, content.file)
         headers = get_headers(name, content_type)
 
-        if CUMULUS["USE_PYRAX"]:
+        if self.use_pyrax:
             if headers.get("Content-Encoding") == "gzip":
                 content = get_gzipped_contents(content)
             self.connection.store_object(container=self.container_name,
@@ -224,7 +113,7 @@ class SwiftclientStorage(Storage):
                                          data=content.read(),
                                          content_type=content_type,
                                          content_encoding=headers.get("Content-Encoding", None),
-                                         ttl=CUMULUS["FILE_TTL"],
+                                         ttl=self.file_ttl,
                                          etag=None)
             # set headers/object metadata
             self.connection.set_object_metadata(container=self.container_name,
@@ -446,9 +335,7 @@ class ThreadSafeSwiftclientStorage(SwiftclientStorage):
 
     def _get_connection(self):
         if not hasattr(self.local_cache, "connection"):
-            public = not self.use_snet  # invert
-            connection = pyrax.connect_to_cloudfiles(region=self.region,
-                                                     public=public)
+            connection = self._get_connection()
             self.local_cache.connection = connection
 
         return self.local_cache.connection
