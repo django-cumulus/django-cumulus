@@ -1,4 +1,4 @@
-from pyrax.cf_wrapper.client import CFClient
+from pyrax.object_storage import DEFAULT_CDN_TTL
 
 from django.conf import settings
 
@@ -16,7 +16,7 @@ CUMULUS = {
     "CONTAINER_SSL_URI": None,
     "SERVICENET": False,
     "TIMEOUT": 5,
-    "TTL": CFClient.default_cdn_ttl,  # 86400s (24h), pyrax default
+    "TTL": DEFAULT_CDN_TTL,  # 86400s (24h), pyrax default
     "USE_SSL": False,
     "USERNAME": None,
     "STATIC_CONTAINER": None,
