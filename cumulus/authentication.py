@@ -1,5 +1,8 @@
 import pyrax
-import swiftclient
+try:
+    import swiftclient
+except ImportError:
+    pass
 
 from cumulus.settings import CUMULUS
 
