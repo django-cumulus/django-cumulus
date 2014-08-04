@@ -4,6 +4,8 @@ changelog
 Version 1.0.5, 30 January 2012
 ******************************
 
+* Combine syncstatic and syncmedia into to syncfiles (backwards
+  incompatible change)
 * Added CloudFilesStaticStorage subclass for collectstatic compatability
 * Added thread-safe CloudFilesStorage subclass
 * Added four new management commands

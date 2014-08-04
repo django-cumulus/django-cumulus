@@ -84,7 +84,7 @@ Or through Django's default ImageField or FileField api::
     http://c0000000.cdn.cloudfiles.rackspacecloud.com/photos/some-image.jpg
 
 
-Static media
+Static files
 ************
 
 ``django-cumulus`` will work with Django's built-in ``collectstatic``
@@ -125,31 +125,35 @@ Management commands
 *******************
 
 
-syncstatic
+syncfiles
 ----------
 
-This management command synchronizes a local static media folder with
-a remote container. A few extra settings are required to make use of
-the command.
+
+This management command synchronizes a local static or media folder with
+respective remote containers. A few extra settings are required to
+make use of the command.
 
 Add the following required settings::
 
     CUMULUS = {
-        'STATIC_CONTAINER': 'MyStaticContainer',  # the name of the container to sync with
+        'CONTAINER': 'MyMediaContainer', # the name of the media container to sync with
+        'STATIC_CONTAINER': 'MyStaticContainer',  # the name of the static container to sync with
         'SERVICENET': False,  # whether to use rackspace's internal private network
     }
 
 Invoke the management command::
 
-    django-admin.py syncstatic
+    django-admin.py syncfiles --static
+
+    django-admin.py syncfiles --media
 
 You can also perform a test run::
 
-    django-admin.py syncstatic -t
+    django-admin.py syncfiles --test-run
 
 For a full list of available options::
 
-    django-admin.py help syncstatic
+    django-admin.py help syncfiles
 
 
 container_create
@@ -301,7 +305,7 @@ INCLUDE_LIST
 ------------
 
 A list of glob-style regular expresions to match files or directories
-to include when using the ``syncstatic`` management command. Defaults
+to include when using the ``syncfiles`` management command. Defaults
 to an empty list.
 
 
@@ -309,7 +313,7 @@ EXCLUDE_LIST
 ------------
 
 A list of glob-style regular expresions to match files or directories
-to exclude when using the ``syncstatic`` management command. Defaults
+to exclude when using the ``syncfiles`` management command. Defaults
 to an empty list.
 
 
@@ -325,8 +329,9 @@ your server(s) and the cdn on the private network.
 STATIC_CONTAINER
 ----------------
 
-When using Django's ``collectstatic`` or ``django-cumulus``'s ``syncstatic`` command, this is the name of the container you want static files to be uploaded to.
-
+When using Django's ``collectstatic`` or ``django-cumulus``'s
+``syncfiles --static`` command, this is the name of the container you
+want static files to be uploaded to.
 
 TIMEOUT
 -------

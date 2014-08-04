@@ -14,7 +14,7 @@ from cumulus.storage import get_headers, get_content_type, get_gzipped_contents
 
 
 class Command(NoArgsCommand):
-    help = "Synchronizes static media to cloud files."
+    help = "Synchronizes project static *or* media files to cloud files."
     option_list = NoArgsCommand.option_list + (
         optparse.make_option("-i", "--include", action="append", default=[],
                              dest="includes", metavar="PATTERN",
@@ -35,6 +35,12 @@ class Command(NoArgsCommand):
                              help="Do not display any output."),
         optparse.make_option("-c", "--container",
                              dest="container", help="Override STATIC_CONTAINER."),
+        optparse.make_option("-s", "--static",
+                             action="store_true", dest="syncstatic", default=False,
+                             help="Sync static files located at settings.STATIC_ROOT path."),
+        optparse.make_option("-m", "--media",
+                             action="store_true", dest="syncmedia", default=False,
+                             help="Sync media files located at settings.MEDIA_ROOT path."),
     )
 
     def set_options(self, options):
@@ -53,18 +59,29 @@ class Command(NoArgsCommand):
         cli_excludes = options.get("excludes")
 
         # CUMULUS CONNECTION AND SETTINGS FROM SETTINGS.PY
+        if options.get("syncmedia") and options.get("syncstatic"):
+            raise CommandError("options --media and --static are mutually exclusive")
         if not self.container_name:
-            self.container_name = CUMULUS["STATIC_CONTAINER"]
+            if self.syncmedia:
+                self.container_name = CUMULUS["CONTAINER"]
+            elif self.syncstatic:
+                self.container_name = CUMULUS["STATIC_CONTAINER"]
+            else:
+                raise CommandError("must select one of the required options, either --media or --static")
         settings_includes = CUMULUS["INCLUDE_LIST"]
         settings_excludes = CUMULUS["EXCLUDE_LIST"]
 
         # PATH SETTINGS
-        self.static_root = os.path.abspath(settings.STATIC_ROOT)
-        self.static_url = settings.STATIC_URL
-        if not self.static_root.endswith("/"):
-            self.static_root = self.static_root + "/"
-        if self.static_url.startswith("/"):
-            self.static_url = self.static_url[1:]
+        if self.syncmedia:
+            self.file_root = os.path.abspath(settings.MEDIA_ROOT)
+            self.file_url = settings.MEDIA_URL
+        elif self.syncstatic:
+            self.file_root = os.path.abspath(settings.STATIC_ROOT)
+            self.file_url = settings.STATIC_URL
+        if not self.file_root.endswith("/"):
+            self.file_root = self.file_root + "/"
+        if self.file_url.startswith("/"):
+            self.file_url = self.file_url[1:]
 
         # SYNCSTATIC VARS
         # combine includes and excludes from the cli and django settings file
@@ -89,16 +106,19 @@ class Command(NoArgsCommand):
             self.wipe_container()
 
         # match local files
-        abspaths = self.match_local(self.static_root, self.includes, self.excludes)
+        abspaths = self.match_local(self.file_root, self.includes, self.excludes)
         relpaths = []
         for path in abspaths:
-            filename = path.split(self.static_root)[1]
+            filename = path.split(self.file_root)[1]
             if filename.startswith("/"):
                 filename = filename[1:]
             relpaths.append(filename)
+
         if not relpaths:
-            raise CommandError("The STATIC_ROOT directory is empty "
-                               "or all files have been ignored.")
+            settings_root_prefix = "MEDIA" if self.syncmedia else "STATIC"
+            raise CommandError("The {0}_ROOT directory is empty "
+                               "or all files have been ignored.".format(settings_root_prefix))
+
         for path in abspaths:
             if not os.path.isfile(path):
                 raise CommandError("Unsupported filetype: {0}.".format(path))
