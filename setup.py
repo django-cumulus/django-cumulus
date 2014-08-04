@@ -9,7 +9,7 @@ setup(
     version=__import__("cumulus").get_version().replace(" ", "-"),
     packages=find_packages(),
     install_requires=[
-        "pyrax>1.5,<1.9",
+        "pyrax>=1.9,<1.10",
     ],
     author="Ferrix Hovi, Thomas Schreiber",
     license="BSD",

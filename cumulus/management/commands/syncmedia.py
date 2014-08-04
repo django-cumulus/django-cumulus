@@ -146,8 +146,8 @@ class Command(NoArgsCommand):
         cloud_objs = self.match_cloud(self.includes, self.excludes)
 
         remote_objects = {
-            obj['name']: datetime.datetime.strptime(obj['last_modified'],
-                                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container[1]
+            obj['name']: datetime.datetime.strptime(obj['last_modified'], "%Y-%m-%dT%H:%M:%S.%f")
+            for obj in self.container[1]
         }
 
         # sync
@@ -233,9 +233,6 @@ class Command(NoArgsCommand):
                                  etag=None,
                                  content_type=mime_type,
                                  headers=headers)
-            # TODO syncheaders
-            #from cumulus.storage import sync_headers
-            #sync_headers(cloud_obj)
         self.upload_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
