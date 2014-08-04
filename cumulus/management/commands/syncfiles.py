@@ -53,13 +53,15 @@ class Command(NoArgsCommand):
         self.quiet = options.get("test_run")
         self.container_name = options.get("container")
         self.verbosity = int(options.get("verbosity"))
+        self.syncmedia = options.get("syncmedia")
+        self.syncstatic = options.get("syncstatic")
         if self.test_run:
             self.verbosity = 2
         cli_includes = options.get("includes")
         cli_excludes = options.get("excludes")
 
         # CUMULUS CONNECTION AND SETTINGS FROM SETTINGS.PY
-        if options.get("syncmedia") and options.get("syncstatic"):
+        if self.syncmedia and self.syncstatic:
             raise CommandError("options --media and --static are mutually exclusive")
         if not self.container_name:
             if self.syncmedia:
