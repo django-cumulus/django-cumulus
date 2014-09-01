@@ -378,7 +378,7 @@ access webfonts across domains::
 GZIP_CONTENT_TYPES
 ------------------
 
-Set which content types must be gzipped before sent to the cloud:
+Set which content types must be gzipped before sent to the cloud::
 
     CUMULUS = {
         'GZIP_CONTENT_TYPES': ['image/jpeg', 'text/css'],
