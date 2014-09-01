@@ -1,5 +1,5 @@
-django-cumulus
-==============
+django-cumulus |version|
+========================
 
 
 ``django-cumulus`` provides a set of tools to utilize the
