@@ -12,8 +12,8 @@ can be found on `django-cumulus.readthedocs.org`_.
 The source code for ``django-cumulus`` can be found and contributed to on
 `github.com/django-cumulus/django-cumulus`_. There you can also `file issues`_.
 
-To find out what's new in this version of django-cumulus, please see
-`the changelog`_
+This documentation applies to the version |version| of django-cumulus.
+To find out what's new in this version, please see `the changelog`_
 
 .. toctree::
    :maxdepth: 2
