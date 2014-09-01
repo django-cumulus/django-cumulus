@@ -1,6 +1,14 @@
 changelog
 =========
 
+Version 1.0.13, 1 September 2014
+********************************
+
+* Revive the changelog
+* Among other things django-cumulus is based on pyrax
+* New people taking care of this project now
+* Too much history to list here, sorry
+
 Version 1.0.5, 30 January 2012
 ******************************
 
