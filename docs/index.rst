@@ -444,3 +444,4 @@ To find out what's new in this version of django-cumulus, please see
 .. _the github repo: https://github.com/django-cumulus/django-cumulus
 .. _install tox: http://tox.readthedocs.org/en/latest/index.html
 .. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
+.. _django-cumulus.readthedocs.org: http://django-cumulus.readthedocs.org/
