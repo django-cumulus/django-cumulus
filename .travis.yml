@@ -24,3 +24,5 @@ script:
 notifications:
   flowdock: e09cf86a93ace282c4fb4d1c4afe100e
   irc: irc.freenode.org#django-cumulus
+
+after_success: coveralls
