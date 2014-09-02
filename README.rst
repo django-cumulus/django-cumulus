@@ -5,6 +5,11 @@ django-cumulus
 `python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
 includes a custom file storage class, SwiftclientFilesStorage.
 
+|build|_
+|coverage|_
+|version|_
+|requires|_
+
 More documentation about the usage and installation of ``django-cumulus``
 can be found on `django-cumulus.readthedocs.org`_.
 
@@ -71,3 +76,12 @@ depending on whether you use Rackspace or OpenStack respectively.
 .. _file issues: https://github.com/django-cumulus/django-cumulus/issues/
 .. _in-development version: https://github.com/django-cumulus/django-cumulus/tarball/master#egg=django-cumulus-dev
 .. _the changelog: http://django-cumulus.readthedocs.org/en/latest/changelog.html
+
+.. |build| image:: https://secure.travis-ci.org/django-cumulus/django-cumulus.png?branch=master
+.. _build: http://travis-ci.org/#!/django-cumulus/django-cumulus
+.. |coverage| image:: https://coveralls.io/repos/django-cumulus/django-cumulus/badge.png?branch=master
+.. _coverage: https://coveralls.io/r/django-cumulus/django-cumulus
+.. |version| image:: https://pypip.in/v/django-cumulus/badge.png
+.. _version: https://crate.io/packages/django-cumulus
+.. |requires| image:: https://requires.io/github/django-cumulus/django-cumulus/requirements.png?branch=master
+.. _requires: https://requires.io/github/django-cumulus/django-cumulus/requirements/?branch=master
