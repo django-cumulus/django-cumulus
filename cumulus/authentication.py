@@ -47,8 +47,11 @@ class Auth(object):
             self.pyrax.set_setting("region", self.region)
             try:
                 self.pyrax.set_credentials(self.username, self.api_key)
-            except Exception as e:
-                logging.exception("Pyrax Connect Error")
+            except:
+                logging.exception(
+                    """Pyrax Connect Error in `django_cumulus.cumulus.authentication.Auth`::
+                           self.pyrax.set_credentials(self.username, self.api_key)
+                    """)
         # else:
         #     headers = {"X-Container-Read": ".r:*"}
         #     self._connection.post_container(self.container_name, headers=headers)
