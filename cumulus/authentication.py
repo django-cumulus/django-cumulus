@@ -1,3 +1,4 @@
+import logging
 import pyrax
 try:
     import swiftclient
@@ -44,7 +45,10 @@ class Auth(object):
             if self.auth_tenant_id:
                 self.pyrax.set_setting("tenant_id", self.auth_tenant_id)
             self.pyrax.set_setting("region", self.region)
-            self.pyrax.set_credentials(self.username, self.api_key)
+            try:
+                self.pyrax.set_credentials(self.username, self.api_key)
+            except Exception as e:
+                logging.exception("Pyrax Connect Error")
         # else:
         #     headers = {"X-Container-Read": ".r:*"}
         #     self._connection.post_container(self.container_name, headers=headers)
