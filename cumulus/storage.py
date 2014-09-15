@@ -138,6 +138,8 @@ class SwiftclientStorage(Auth, Storage):
                 pass
             else:
                 raise
+        except pyrax.exceptions.NoSuchObject:
+            pass
 
     def exists(self, name):
         """
