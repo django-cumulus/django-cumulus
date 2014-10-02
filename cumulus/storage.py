@@ -93,7 +93,7 @@ class SwiftclientStorage(Auth, Storage):
         """
         Returns the SwiftclientStorageFile.
         """
-        return SwiftclientStorageFile(storage=self, name=name)
+        return ContentFile(self._get_object(name).get())
 
     def _save(self, name, content):
         """
@@ -153,7 +153,11 @@ class SwiftclientStorage(Auth, Storage):
         """
         Returns the total size, in bytes, of the file specified by name.
         """
-        return self._get_object(name).total_bytes
+        file_object = self._get_object(name)
+        if file_object:
+            return file_object.total_bytes
+        else:
+            return 0
 
     def url(self, name):
         """
@@ -217,105 +221,6 @@ class SwiftclientStaticStorage(SwiftclientStorage):
     container_name = CUMULUS["STATIC_CONTAINER"]
     container_uri = CUMULUS["STATIC_CONTAINER_URI"]
     container_ssl_uri = CUMULUS["STATIC_CONTAINER_SSL_URI"]
-
-
-class SwiftclientStorageFile(File):
-    closed = False
-
-    def __init__(self, storage, name, *args, **kwargs):
-        self._storage = storage
-        self._pos = 0
-        self._chunks = None
-        super(SwiftclientStorageFile, self).__init__(file=None, name=name,
-                                                     *args, **kwargs)
-
-    def _get_pos(self):
-        return self._pos
-
-    def _get_size(self):
-        if not hasattr(self, "_size"):
-            self._size = self._storage.size(self.name)
-        return self._size
-
-    def _set_size(self, size):
-        self._size = size
-
-    size = property(_get_size, _set_size)
-
-    def _get_file(self):
-        if not hasattr(self, "_file"):
-            self._file = self._storage._get_object(self.name)
-            self._file.tell = self._get_pos
-        return self._file
-
-    def _set_file(self, value):
-        if value is None:
-            if hasattr(self, "_file"):
-                del self._file
-        else:
-            self._file = value
-
-    file = property(_get_file, _set_file)
-
-    def read(self, chunk_size=None):
-        """
-        Reads specified chunk_size or the whole file if chunk_size is None.
-
-        If reading the whole file and the content-encoding is gzip, also
-        gunzip the read content.
-
-        If chunk_size is provided, the same chunk_size will be used in all
-        further read() calls until the file is reopened or seek() is called.
-        """
-        if self._pos >= self._get_size() or chunk_size == 0:
-            return ""
-
-        if chunk_size is None and self._chunks is None:
-            meta, data = self.file.get(include_meta=True)
-            if meta.get("content-encoding", None) == "gzip":
-                zbuf = StringIO(data)
-                zfile = GzipFile(mode="rb", fileobj=zbuf)
-                data = zfile.read()
-        else:
-            if self._chunks is None:
-                # When reading by chunks, we're supposed to read the whole file
-                # before calling get() again.
-                self._chunks = self.file.get(chunk_size=chunk_size)
-
-            try:
-                data = self._chunks.next()
-            except StopIteration:
-                data = ""
-
-        self._pos += len(data)
-        return data
-
-    def chunks(self, chunk_size=None):
-        """
-        Returns an iterator of file where each chunk has chunk_size.
-        """
-        if not chunk_size:
-            chunk_size = self.DEFAULT_CHUNK_SIZE
-        return self.file.get(chunk_size=chunk_size)
-
-    def open(self, *args, **kwargs):
-        """
-        Opens the cloud file object.
-        """
-        self._pos = 0
-        self._chunks = None
-
-    def close(self, *args, **kwargs):
-        self._pos = 0
-        self._chunks = None
-
-    @property
-    def closed(self):
-        return not hasattr(self, "_file")
-
-    def seek(self, pos):
-        self._pos = pos
-        self._chunks = None
 
 
 class ThreadSafeSwiftclientStorage(SwiftclientStorage):
