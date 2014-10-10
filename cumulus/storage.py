@@ -43,12 +43,15 @@ def get_headers(name, content_type):
     return headers
 
 
-def sync_headers(cloud_obj, headers={}, header_patterns=HEADER_PATTERNS):
+def sync_headers(cloud_obj, headers=None, header_patterns=HEADER_PATTERNS):
     """
     Overwrites the given cloud_obj's headers with the ones given as ``headers`
     and adds additional headers as defined in the HEADERS setting depending on
     the cloud_obj's file name.
     """
+    if headers is None:
+        headers = {}
+
     # don't set headers on directories
     content_type = getattr(cloud_obj, "content_type", None)
     if content_type == "application/directory":
