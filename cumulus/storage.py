@@ -120,7 +120,8 @@ class SwiftclientStorage(Auth, Storage):
             self.connection.set_object_metadata(container=self.container_name,
                                                 obj=name,
                                                 metadata=headers,
-                                                prefix='')
+                                                prefix='',
+                                                clear=True)
         else:
             # TODO gzipped content when using swift client
             self.connection.put_object(self.container_name, name,
