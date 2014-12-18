@@ -14,9 +14,8 @@ class Command(collectstatic.Command):
         if isinstance(self.storage, SwiftclientStorage):
             if self.storage.exists(prefixed_path):
                 try:
-                    etag = self.storage._get_cloud_obj(prefixed_path).etag
+                    etag = self.storage._get_object(prefixed_path).etag
                     digest = "{0}".format(hashlib.md5(source_storage.open(path).read()).hexdigest())
-                    print etag, digest
                     if etag == digest:
                         self.log(u"Skipping '{0}' (not modified based on file hash)".format(path))
                         return False
