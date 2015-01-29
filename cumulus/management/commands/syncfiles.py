@@ -180,7 +180,7 @@ class Command(NoArgsCommand):
         Determines files to be uploaded and call ``upload_file`` on each.
         """
         for relpath in relpaths:
-            abspath = [p for p in abspaths if p.endswith(relpath)][0]
+            abspath = [p for p in abspaths if p[len(self.file_root):] == relpath][0]
             cloud_datetime = remote_objects[relpath] if relpath in remote_objects else None
             local_datetime = datetime.datetime.utcfromtimestamp(os.stat(abspath).st_mtime)
 
