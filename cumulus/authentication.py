@@ -3,7 +3,7 @@ import pyrax
 try:
     import swiftclient
 except ImportError:
-    pass
+    swiftclient = None
 
 from cumulus.settings import CUMULUS
 
@@ -61,7 +61,7 @@ class Auth(object):
             if self.use_pyrax:
                 public = not self.use_snet  # invert
                 self._connection = pyrax.connect_to_cloudfiles(public=public)
-            else:
+            elif swiftclient:
                 self._connection = swiftclient.Connection(
                     authurl=self.auth_url,
                     user=self.username,
@@ -70,6 +70,8 @@ class Auth(object):
                     auth_version=self.auth_version,
                     tenant_name=self.auth_tenant_name,
                 )
+            else:
+                raise NotImplementedError("Cloud connection is not correctly configured.")
         return self._connection
 
     def _set_connection(self, value):
@@ -133,9 +135,15 @@ class Auth(object):
         """
         Helper function to retrieve the requested Object.
         """
-        try:
+        if self.use_pyrax:
+            try:
+                return self.container.get_object(name)
+            except pyrax.exceptions.NoSuchObject:
+                return None
+        elif swiftclient:
+            try:
+                return self.container.get_object(name)
+            except swiftclient.exceptions.ClientException:
+                return None
+        else:
             return self.container.get_object(name)
-        except pyrax.exceptions.NoSuchObject:
-            return None
-        except swiftclient.exceptions.ClientException:
-            return None
