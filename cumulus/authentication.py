@@ -66,7 +66,7 @@ class Auth(object):
                     authurl=self.auth_url,
                     user=self.username,
                     key=self.api_key,
-                    snet=self.servicenet,
+                    snet=self.use_snet,
                     auth_version=self.auth_version,
                     tenant_name=self.auth_tenant_name,
                 )
