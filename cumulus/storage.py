@@ -277,4 +277,4 @@ class SwiftclientStaticStorage(CumulusStaticStorage):
 class ThreadSafeSwiftclientStorage(ThreadSafeCumulusStorage):
     def __init__(self, *args, **kwargs):
         warnings.warn("ThreadSafeSwiftclientStorage is deprecated and will be removed in django-cumulus==1.3: \
-                       Use threadsafeswiftclientstorage instead.", DeprecationWarning)
+                       Use ThreadSafeCumulusStorage instead.", DeprecationWarning)
