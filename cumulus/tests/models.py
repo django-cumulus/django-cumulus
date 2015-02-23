@@ -1,8 +1,8 @@
 from django.db import models
 
-from cumulus.storage import SwiftclientStorage
+from cumulus.storage import CumulusStorage
 
-openstack_storage = SwiftclientStorage()
+openstack_storage = CumulusStorage()
 
 
 class Thing(models.Model):

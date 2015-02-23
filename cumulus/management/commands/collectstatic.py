@@ -2,7 +2,7 @@ import hashlib
 
 from django.contrib.staticfiles.management.commands import collectstatic
 
-from cumulus.storage import SwiftclientStorage
+from cumulus.storage import CumulusStorage
 
 
 class Command(collectstatic.Command):
@@ -11,7 +11,7 @@ class Command(collectstatic.Command):
         """
         Checks if the target file should be deleted if it already exists
         """
-        if isinstance(self.storage, SwiftclientStorage):
+        if isinstance(self.storage, CumulusStorage):
             if self.storage.exists(prefixed_path):
                 try:
                     etag = self.storage._get_object(prefixed_path).etag

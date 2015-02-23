@@ -2,7 +2,7 @@ from urlparse import urlparse
 
 from django.conf import settings
 
-from cumulus.storage import SwiftclientStorage, SwiftclientStaticStorage
+from cumulus.storage import CumulusStorage, CumulusStaticStorage
 
 
 def _is_ssl_uri(uri):
@@ -20,7 +20,7 @@ def cdn_url(request):
     """
     A context processor that exposes the full CDN URL in templates.
     """
-    cdn_url, ssl_url = _get_container_urls(SwiftclientStorage())
+    cdn_url, ssl_url = _get_container_urls(CumulusStorage())
     static_url = settings.STATIC_URL
 
     return {
@@ -34,7 +34,7 @@ def static_cdn_url(request):
     A context processor that exposes the full static CDN URL
     as static URL in templates.
     """
-    cdn_url, ssl_url = _get_container_urls(SwiftclientStaticStorage())
+    cdn_url, ssl_url = _get_container_urls(CumulusStaticStorage())
     static_url = settings.STATIC_URL
 
     return {
