@@ -261,6 +261,10 @@ class ThreadSafeCumulusStorage(CumulusStorage):
     container = property(_get_container, CumulusStorage._set_container)
 
 
+"""
+Keep the following Swiftclient storage classes around for
+backwards import compatibility.
+"""
 SwiftclientStaticStorage = CumulusStaticStorage
 SwiftclientStorage = CumulusStorage
 ThreadSafeSwiftclientStorage = ThreadSafeCumulusStorage
