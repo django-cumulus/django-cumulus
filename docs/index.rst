@@ -4,7 +4,7 @@ django-cumulus |version|
 
 ``django-cumulus`` provides a set of tools to utilize the
 `python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
-includes a custom file storage class, SwiftclientFilesStorage.
+includes a custom file storage class, CumulusFilesStorage.
 
 More documentation about the usage and installation of ``django-cumulus``
 can be found on `django-cumulus.readthedocs.org`_.
@@ -53,7 +53,7 @@ Add the following to your project's settings.py file::
         'CONTAINER': 'ContainerName',
         'PYRAX_IDENTITY_TYPE': 'rackspace',
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.CumulusStorage'
 
 The ``PYRAX_IDENTITY_TYPE`` parameter can either be ``rackspace`` or ``keystone``
 depending on whether you use Rackspace or OpenStack respectively.
@@ -61,9 +61,9 @@ depending on whether you use Rackspace or OpenStack respectively.
 Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you
 can do the following in your models::
 
-    from cumulus.storage import SwiftclientStorage
+    from cumulus.storage import CumulusStorage
 
-    swiftclient_storage = SwiftclientStorage()
+    swiftclient_storage = CumulusStorage()
 
     class Photo(models.Model):
         image = models.ImageField(storage=swiftclient_storage, upload_to='photos')
@@ -94,7 +94,7 @@ settings::
     CUMULUS = {
         'STATIC_CONTAINER': 'YourStaticContainer'
     }
-    STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
+    STATICFILES_STORAGE = 'cumulus.storage.CumulusStaticStorage'
 
 
 Context Processor
@@ -103,7 +103,7 @@ Context Processor
 ``django-cumulus`` includes an optional context_processor for accessing
 the full CDN_URL of any container files from your templates.
 
-This is useful when you're using Swiftclient to serve you static media
+This is useful when you're using Cumulus to serve you static media
 such as css and javascript and don't have access to the ``ImageField``
 or ``FileField``'s url() convenience method.
 

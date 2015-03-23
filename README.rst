@@ -3,7 +3,7 @@ django-cumulus
 
 ``django-cumulus`` provides a set of tools to utilize the
 `python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
-includes a custom file storage class, SwiftclientFilesStorage.
+includes a custom file storage class, CumulusFilesStorage.
 
 |docs|_
 |build|_
@@ -64,7 +64,7 @@ Please visit `django-cumulus.readthedocs.org`_ for the full documentation.
         'CONTAINER': 'ContainerName',
         'PYRAX_IDENTITY_TYPE': 'rackspace',
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.CumulusStorage'
 
 The ``PYRAX_IDENTITY_TYPE`` parameter can either be ``rackspace`` or ``keystone``
 depending on whether you use Rackspace or OpenStack respectively.

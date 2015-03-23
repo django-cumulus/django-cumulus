@@ -152,8 +152,8 @@ LOGGING = {
     }
 }
 
-DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
-#STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
+DEFAULT_FILE_STORAGE = 'cumulus.storage.CumulusStorage'
+#STATICFILES_STORAGE = 'cumulus.storage.CumulusStaticStorage'
 
 # these are the default cumulus settings
 CUMULUS = {
