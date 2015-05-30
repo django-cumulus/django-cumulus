@@ -245,7 +245,7 @@ class ThreadSafeCumulusStorage(CumulusStorage):
 
     def _get_connection(self):
         if not hasattr(self.local_cache, "connection"):
-            connection = self._get_connection()
+            super(ThreadSafeSwiftclientStorage, self)._get_connection()
             self.local_cache.connection = connection
 
         return self.local_cache.connection
