@@ -6,10 +6,8 @@ env:
   - secure: AjqGC94fhiOQ6V/fU9OncO3Zs9ltWbD/RWgS7y9RU/jP2g23IL6tnkDgFEtsagmdXF2j5IZymEtsqP+Qa4Ys/fET+TPd+6NeeGlpiHSHtnjBylwA/Qn8SluVR7JsdNecJBCE69D5x54omZonVGEKJbf8KOTvAZ2RqJrajDqYN4M=
   - secure: baeegwlgLhpEwFqIf/xU4zvgVGAvwVuuFhEslWyAzMJucauPMR/dGOf8uD4PsFiyqZyJZH2ifOR6ufpeeoPsTgEgKTtxkJO8xmLM+pn794y2C1N8z+GOosulRYP1b/cyhYMUJqFstyEezcqs18QMWpkrmcjI5U6nkJkcuTgfcpE=
   matrix:
-  - TOXENV=py26-django15
-  - TOXENV=py26-django14
-  - TOXENV=py26-django13
-  - TOXENV=py26-django12
+  - TOXENV=py27-django17
+  - TOXENV=py27-django16
   - TOXENV=py27-django15
   - TOXENV=py27-django14
   - TOXENV=py27-django13
