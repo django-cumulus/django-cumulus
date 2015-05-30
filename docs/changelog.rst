@@ -6,6 +6,7 @@ Version 1.2, (in progress)
 
 * Revive the changelog
 * Rename legacy SwiftclientStorage to CumulusStorage (keeping backwards compatibility)
+* Fix Django 1.7 support
 * Bugfixes
 
 

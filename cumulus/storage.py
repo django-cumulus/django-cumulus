@@ -9,8 +9,9 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage
+from django.core.files.base import File, ContentFile
+from django.utils.deconstruct import deconstructible
 
 from cumulus.authentication import Auth
 from cumulus.settings import CUMULUS
@@ -81,6 +82,7 @@ def get_gzipped_contents(input_file):
     return ContentFile(zbuf.getvalue())
 
 
+@deconstructible
 class CumulusStorage(Auth, Storage):
     """
     Custom storage for Cumulus.
