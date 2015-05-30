@@ -11,7 +11,18 @@ except ImportError:
 
 from django.core.files.storage import Storage
 from django.core.files.base import File, ContentFile
-from django.utils.deconstruct import deconstructible
+
+try:
+    from django.utils.deconstruct import deconstructible
+except ImportError:
+    # Make a no-op decorator to avoid errors
+    def deconstructible(*args, **kwargs):
+        def decorator(klass):
+            return klass
+
+        if not args:
+            return decorator
+        return decorator(*args, **kwargs)
 
 from cumulus.authentication import Auth
 from cumulus.settings import CUMULUS
