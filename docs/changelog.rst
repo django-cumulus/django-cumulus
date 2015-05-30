@@ -6,6 +6,7 @@ Version 1.2, (in progress)
 
 * Revive the changelog
 * Rename legacy SwiftclientStorage to CumulusStorage (keeping backwards compatibility)
+* Fix unicode problems
 
 
 Version 1.0.13, 1 September 2014
