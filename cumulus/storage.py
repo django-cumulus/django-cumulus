@@ -7,7 +7,10 @@ from gzip import GzipFile
 try:
     from cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
 
 from django.core.files.storage import Storage
 from django.core.files.base import File, ContentFile
