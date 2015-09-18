@@ -5,6 +5,8 @@ try:
 except ImportError:
     swiftclient = None
 
+from django.utils.functional import cached_property
+
 from cumulus.settings import CUMULUS
 
 
@@ -116,20 +118,36 @@ class Auth(object):
 
     container = property(_get_container, _set_container)
 
-    def _get_container_url(self):
-        if self.use_ssl and self.container_ssl_uri:
-            self._container_public_uri = self.container_ssl_uri
-        elif self.use_ssl:
-            self._container_public_uri = self.container.cdn_ssl_uri
-        elif self.container_uri:
-            self._container_public_uri = self.container_uri
-        else:
-            self._container_public_uri = self.container.cdn_uri
-        if CUMULUS["CNAMES"] and self._container_public_uri in CUMULUS["CNAMES"]:
-            self._container_public_uri = CUMULUS["CNAMES"][self._container_public_uri]
-        return self._container_public_uri
+    def get_cname(self, uri):
+        if not CUMULUS['CNAMES'] or uri not in CUMULUS['CNAMES']:
+            return uri
 
-    container_url = property(_get_container_url)
+        return CUMULUS['CNAMES'][uri]
+
+    @cached_property
+    def container_cdn_ssl_uri(self):
+        if self.container_ssl_uri:
+            uri = self.container_ssl_uri
+        else:
+            uri = self.container.cdn_ssl_uri
+
+        return self.get_cname(uri)
+
+    @cached_property
+    def container_cdn_uri(self):
+        if self.container_uri:
+            uri = self.container_uri
+        else:
+            uri = self.container.cdn_uri
+
+        return self.get_cname(uri)
+
+    @property
+    def container_url(self):
+        if self.use_ssl:
+            return self.container_cdn_ssl_uri
+        else:
+            return self.container_cdn_uri
 
     def _get_object(self, name):
         """
