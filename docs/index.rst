@@ -411,7 +411,7 @@ see Pyrax documentation for more details).
 Requirements
 ************
 
-* Django>=1.2
+* Django>=1.4
 * pyrax>=1.9,<1.10
 
 
