@@ -22,7 +22,7 @@ class Auth(object):
     auth_tenant_name = CUMULUS["AUTH_TENANT_NAME"]
     auth_version = CUMULUS["AUTH_VERSION"]
     pyrax_identity_type = CUMULUS["PYRAX_IDENTITY_TYPE"]
-    fail_silently = CUMULUS.get('FAIL_SILENTLY', True)
+    fail_silently = CUMULUS["FAIL_SILENTLY"]
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None, container_uri=None):
