@@ -1,5 +1,3 @@
-import optparse
-
 from django.core.management.base import BaseCommand, CommandError
 
 from cumulus.authentication import Auth
@@ -10,9 +8,9 @@ class Command(BaseCommand):
     help = "Create a container."
     args = "[container_name]"
 
-    option_list = BaseCommand.option_list + (
-        optparse.make_option("-p", "--private", action="store_true", default=False,
-                             dest="private", help="Make a private container."),)
+    def add_arguments(self, parser):
+        parser.add_argument('-p', '--private', action='store_true', default=False,
+                            dest='private', help='Assume Yes to confiramtion question')
 
     def handle(self, *args, **options):
         if len(args) != 1:
