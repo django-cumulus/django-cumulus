@@ -8,6 +8,9 @@ except ImportError:
 from django.utils.functional import cached_property
 
 from cumulus.settings import CUMULUS
+from OpenSSL.SSL import SysCallError
+from pyrax.exceptions import ClientException, InternalServerError, NotAuthenticated, NotFound
+from requests.exceptions import ConnectionError, SSLError
 
 
 class Auth(object):
@@ -50,6 +53,20 @@ class Auth(object):
             self.pyrax.set_setting("region", self.region)
             try:
                 self.pyrax.set_credentials(self.username, self.api_key)
+            except SSLError as e:
+                logging.warning('Got a SSLError: %s' % (e.strerror))
+            except ConnectionError as e:
+                logging.warning('Got a ConnectionError: %s' % e)
+            except InternalServerError as e:
+                logging.warning('Got an InternalError: %s' % e)
+            except SysCallError as e:
+                logging.warning('Got a SysCallError: %s' % e)
+            except NotAuthenticated as e:
+                logging.warning('Got a NotAuthenticated: %s' % e)
+            except ClientException as e:
+                logging.warning('Got a ClientException: %s' % e)
+            except NotFound as e:
+                logging.warning('Got a NotFound: %s' % e)
             except Exception as e:
                 logging.exception(
                     """Pyrax Connect Error in `django_cumulus.cumulus.authentication.Auth`::
