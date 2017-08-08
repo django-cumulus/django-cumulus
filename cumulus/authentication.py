@@ -6,6 +6,9 @@ except ImportError:
     swiftclient = None
 
 from django.utils.functional import cached_property
+from OpenSSL.SSL import Error
+from pyrax.exceptions import PyraxException
+from requests.exceptions import RequestException
 
 from cumulus.settings import CUMULUS
 
@@ -22,7 +25,6 @@ class Auth(object):
     auth_tenant_name = CUMULUS["AUTH_TENANT_NAME"]
     auth_version = CUMULUS["AUTH_VERSION"]
     pyrax_identity_type = CUMULUS["PYRAX_IDENTITY_TYPE"]
-    fail_silently = CUMULUS["FAIL_SILENTLY"]
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None, container_uri=None):
@@ -50,13 +52,13 @@ class Auth(object):
             self.pyrax.set_setting("region", self.region)
             try:
                 self.pyrax.set_credentials(self.username, self.api_key)
+            except (Error, PyraxException, RequestException) as e:
+                logging.warning('Error in pyrax.set_credentials, %s: %s', e.__class__.__name__, str(e))
             except Exception as e:
                 logging.exception(
                     """Pyrax Connect Error in `django_cumulus.cumulus.authentication.Auth`::
                            self.pyrax.set_credentials(self.username, self.api_key)
                     """)
-                if not self.fail_silently:
-                    raise e
         # else:
         #     headers = {"X-Container-Read": ".r:*"}
         #     self._connection.post_container(self.container_name, headers=headers)
