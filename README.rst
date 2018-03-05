@@ -82,7 +82,7 @@ depending on whether you use Rackspace or OpenStack respectively.
 .. _build: http://travis-ci.org/#!/django-cumulus/django-cumulus
 .. |coverage| image:: https://coveralls.io/repos/django-cumulus/django-cumulus/badge.png?branch=master
 .. _coverage: https://coveralls.io/r/django-cumulus/django-cumulus
-.. |version| image:: https://pypip.in/v/django-cumulus/badge.png
+.. |version| image:: https://img.shields.io/pypi/v/django-cumulus.svg
 .. _version: https://crate.io/packages/django-cumulus
 .. |requires| image:: https://requires.io/github/django-cumulus/django-cumulus/requirements.png?branch=master
 .. _requires: https://requires.io/github/django-cumulus/django-cumulus/requirements/?branch=master
