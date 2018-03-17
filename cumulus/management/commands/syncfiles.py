@@ -1,11 +1,10 @@
 import datetime
 import fnmatch
-import optparse
 import os
 import re
 
 from django.conf import settings
-from django.core.management.base import CommandError, NoArgsCommand
+from django.core.management.base import CommandError, BaseCommand
 
 
 from cumulus.authentication import Auth
@@ -13,35 +12,35 @@ from cumulus.settings import CUMULUS
 from cumulus.storage import get_headers, get_content_type, get_gzipped_contents
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Synchronizes project static *or* media files to cloud files."
-    option_list = NoArgsCommand.option_list + (
-        optparse.make_option("-i", "--include", action="append", default=[],
+
+    def add_arguments(self, parser):
+        parser.add_argument("-i", "--include", action="append", default=[],
                              dest="includes", metavar="PATTERN",
                              help="Include file or directories matching this glob-style "
                                   "pattern. Use multiple times to include more."),
-        optparse.make_option("-e", "--exclude", action="append", default=[],
+        parser.add_argument("-e", "--exclude", action="append", default=[],
                              dest="excludes", metavar="PATTERN",
                              help="Exclude files or directories matching this glob-style "
                                   "pattern. Use multiple times to exclude more."),
-        optparse.make_option("-w", "--wipe",
+        parser.add_argument("-w", "--wipe",
                              action="store_true", dest="wipe", default=False,
                              help="Wipes out entire contents of container first."),
-        optparse.make_option("-t", "--test-run",
+        parser.add_argument("-t", "--test-run",
                              action="store_true", dest="test_run", default=False,
                              help="Performs a test run of the sync."),
-        optparse.make_option("-q", "--quiet",
+        parser.add_argument("-q", "--quiet",
                              action="store_true", dest="test_run", default=False,
                              help="Do not display any output."),
-        optparse.make_option("-c", "--container",
+        parser.add_argument("-c", "--container",
                              dest="container", help="Override STATIC_CONTAINER."),
-        optparse.make_option("-s", "--static",
+        parser.add_argument("-s", "--static",
                              action="store_true", dest="syncstatic", default=False,
                              help="Sync static files located at settings.STATIC_ROOT path."),
-        optparse.make_option("-m", "--media",
+        parser.add_argument("-m", "--media",
                              action="store_true", dest="syncmedia", default=False,
                              help="Sync media files located at settings.MEDIA_ROOT path."),
-    )
 
     def set_options(self, options):
         """

@@ -1,5 +1,3 @@
-import optparse
-
 from django.core.management.base import BaseCommand
 
 from cumulus.authentication import Auth
@@ -9,12 +7,11 @@ class Command(BaseCommand):
     help = "Display info for containers"
     args = "[container_name container_name ...]"
 
-    option_list = BaseCommand.option_list + (
-        optparse.make_option("-n", "--name", action="store_true", dest="name", default=False),
-        optparse.make_option("-c", "--count", action="store_true", dest="count", default=False),
-        optparse.make_option("-s", "--size", action="store_true", dest="size", default=False),
-        optparse.make_option("-u", "--uri", action="store_true", dest="uri", default=False)
-    )
+    def add_arguments(self, parser):
+        parser.add_argument("-n", "--name", action="store_true", dest="name", default=False),
+        parser.add_argument("-c", "--count", action="store_true", dest="count", default=False),
+        parser.add_argument("-s", "--size", action="store_true", dest="size", default=False),
+        parser.add_argument("-u", "--uri", action="store_true", dest="uri", default=False)
 
     def handle(self, *args, **options):
         self._connection = Auth()._get_connection()
