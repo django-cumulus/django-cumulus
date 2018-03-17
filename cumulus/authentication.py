@@ -6,6 +6,9 @@ except ImportError:
     swiftclient = None
 
 from django.utils.functional import cached_property
+from OpenSSL.SSL import Error
+from pyrax.exceptions import PyraxException
+from requests.exceptions import RequestException
 
 from cumulus.settings import CUMULUS
 
@@ -49,7 +52,9 @@ class Auth(object):
             self.pyrax.set_setting("region", self.region)
             try:
                 self.pyrax.set_credentials(self.username, self.api_key)
-            except:
+            except (Error, PyraxException, RequestException) as e:
+                logging.warning('Error in pyrax.set_credentials, %s: %s', e.__class__.__name__, str(e))
+            except Exception as e:
                 logging.exception(
                     """Pyrax Connect Error in `django_cumulus.cumulus.authentication.Auth`::
                            self.pyrax.set_credentials(self.username, self.api_key)
