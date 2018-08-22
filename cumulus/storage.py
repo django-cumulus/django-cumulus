@@ -103,6 +103,9 @@ class SwiftclientStorage(Storage):
     x_meta_temp_url_key = CUMULUS['X_ACCOUNT_META_TEMP_URL_KEY']
     x_storage_url = CUMULUS['X_STORAGE_URL']
     x_temp_url_timeout = CUMULUS['X_TEMP_URL_TIMEOUT']
+    base_url = CUMULUS['X_TEMP_URL_BASE']
+
+
 
     def __init__(self, username=None, api_key=None, container=None,
                  connection_kwargs=None, container_uri=None):
@@ -293,11 +296,10 @@ class SwiftclientStorage(Storage):
         method = 'GET'
         expires = int(time() + self.x_temp_url_timeout)
         key = self.x_meta_temp_url_key
-        base = 'https://storage101.dfw1.clouddrive.com'
         path = '{0}/{1}/{2}'.format(self.x_storage_url, self.container_name, name)
         hmac_body = '{0}\n{1}\n{2}'.format(method, expires, path)
         sig = hmac.new(key, hmac_body, sha).hexdigest()
-        return  '{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(base, path, sig, 
+        return  '{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(self.base_url, path, sig, 
                                                                 expires)
 
     def listdir(self, path):
