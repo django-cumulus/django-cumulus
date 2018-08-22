@@ -1,10 +1,10 @@
-django-cumulus
-==============
+django-cumulus |version|
+========================
 
 
 ``django-cumulus`` provides a set of tools to utilize the
 `python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
-includes a custom file storage class, SwiftclientFilesStorage.
+includes a custom file storage class, CumulusFilesStorage.
 
 More documentation about the usage and installation of ``django-cumulus``
 can be found on `django-cumulus.readthedocs.org`_.
@@ -12,8 +12,8 @@ can be found on `django-cumulus.readthedocs.org`_.
 The source code for ``django-cumulus`` can be found and contributed to on
 `github.com/django-cumulus/django-cumulus`_. There you can also `file issues`_.
 
-To find out what's new in this version of django-cumulus, please see
-`the changelog`_
+This documentation applies to the version |version| of django-cumulus.
+To find out what's new in this version, please see `the changelog`_
 
 .. toctree::
    :maxdepth: 2
@@ -53,7 +53,7 @@ Add the following to your project's settings.py file::
         'CONTAINER': 'ContainerName',
         'PYRAX_IDENTITY_TYPE': 'rackspace',
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.CumulusStorage'
 
 The ``PYRAX_IDENTITY_TYPE`` parameter can either be ``rackspace`` or ``keystone``
 depending on whether you use Rackspace or OpenStack respectively.
@@ -61,9 +61,9 @@ depending on whether you use Rackspace or OpenStack respectively.
 Alternatively, if you don't want to set the DEFAULT_FILE_STORAGE, you
 can do the following in your models::
 
-    from cumulus.storage import SwiftclientStorage
+    from cumulus.storage import CumulusStorage
 
-    swiftclient_storage = SwiftclientStorage()
+    swiftclient_storage = CumulusStorage()
 
     class Photo(models.Model):
         image = models.ImageField(storage=swiftclient_storage, upload_to='photos')
@@ -84,7 +84,7 @@ Or through Django's default ImageField or FileField api::
     http://c0000000.cdn.cloudfiles.rackspacecloud.com/photos/some-image.jpg
 
 
-Static media
+Static files
 ************
 
 ``django-cumulus`` will work with Django's built-in ``collectstatic``
@@ -94,7 +94,7 @@ settings::
     CUMULUS = {
         'STATIC_CONTAINER': 'YourStaticContainer'
     }
-    STATICFILES_STORAGE = 'cumulus.storage.SwiftclientStaticStorage'
+    STATICFILES_STORAGE = 'cumulus.storage.CumulusStaticStorage'
 
 
 Context Processor
@@ -103,7 +103,7 @@ Context Processor
 ``django-cumulus`` includes an optional context_processor for accessing
 the full CDN_URL of any container files from your templates.
 
-This is useful when you're using Swiftclient to serve you static media
+This is useful when you're using Cumulus to serve you static media
 such as css and javascript and don't have access to the ``ImageField``
 or ``FileField``'s url() convenience method.
 
@@ -125,31 +125,35 @@ Management commands
 *******************
 
 
-syncstatic
+syncfiles
 ----------
 
-This management command synchronizes a local static media folder with
-a remote container. A few extra settings are required to make use of
-the command.
+
+This management command synchronizes a local static or media folder with
+respective remote containers. A few extra settings are required to
+make use of the command.
 
 Add the following required settings::
 
     CUMULUS = {
-        'STATIC_CONTAINER': 'MyStaticContainer',  # the name of the container to sync with
+        'CONTAINER': 'MyMediaContainer', # the name of the media container to sync with
+        'STATIC_CONTAINER': 'MyStaticContainer',  # the name of the static container to sync with
         'SERVICENET': False,  # whether to use rackspace's internal private network
     }
 
 Invoke the management command::
 
-    django-admin.py syncstatic
+    django-admin.py syncfiles --static
+
+    django-admin.py syncfiles --media
 
 You can also perform a test run::
 
-    django-admin.py syncstatic -t
+    django-admin.py syncfiles --test-run
 
 For a full list of available options::
 
-    django-admin.py help syncstatic
+    django-admin.py help syncfiles
 
 
 container_create
@@ -301,7 +305,7 @@ INCLUDE_LIST
 ------------
 
 A list of glob-style regular expresions to match files or directories
-to include when using the ``syncstatic`` management command. Defaults
+to include when using the ``syncfiles`` management command. Defaults
 to an empty list.
 
 
@@ -309,7 +313,7 @@ EXCLUDE_LIST
 ------------
 
 A list of glob-style regular expresions to match files or directories
-to exclude when using the ``syncstatic`` management command. Defaults
+to exclude when using the ``syncfiles`` management command. Defaults
 to an empty list.
 
 
@@ -325,8 +329,9 @@ your server(s) and the cdn on the private network.
 STATIC_CONTAINER
 ----------------
 
-When using Django's ``collectstatic`` or ``django-cumulus``'s ``syncstatic`` command, this is the name of the container you want static files to be uploaded to.
-
+When using Django's ``collectstatic`` or ``django-cumulus``'s
+``syncfiles --static`` command, this is the name of the container you
+want static files to be uploaded to.
 
 TIMEOUT
 -------
@@ -373,7 +378,7 @@ access webfonts across domains::
 GZIP_CONTENT_TYPES
 ------------------
 
-Set which content types must be gzipped before sent to the cloud:
+Set which content types must be gzipped before sent to the cloud::
 
     CUMULUS = {
         'GZIP_CONTENT_TYPES': ['image/jpeg', 'text/css'],
@@ -406,8 +411,8 @@ see Pyrax documentation for more details).
 Requirements
 ************
 
-* Django>=1.2
-* pyrax>1.5,<1.9
+* Django>=1.4
+* pyrax>=1.9,<1.10
 
 
 Tests
@@ -439,3 +444,4 @@ To find out what's new in this version of django-cumulus, please see
 .. _the github repo: https://github.com/django-cumulus/django-cumulus
 .. _install tox: http://tox.readthedocs.org/en/latest/index.html
 .. _Rackspace Management Console: https://manage.rackspacecloud.com/APIAccess.do
+.. _django-cumulus.readthedocs.org: http://django-cumulus.readthedocs.org/

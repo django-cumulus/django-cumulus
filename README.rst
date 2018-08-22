@@ -3,7 +3,13 @@ django-cumulus
 
 ``django-cumulus`` provides a set of tools to utilize the
 `python-swiftclient`_ and `Rackspace Cloud Files API`_ from Django. It
-includes a custom file storage class, SwiftclientFilesStorage.
+includes a custom file storage class, CumulusFilesStorage.
+
+|docs|_
+|build|_
+|coverage|_
+|version|_
+|requires|_
 
 More documentation about the usage and installation of ``django-cumulus``
 can be found on `django-cumulus.readthedocs.org`_.
@@ -58,7 +64,7 @@ Please visit `django-cumulus.readthedocs.org`_ for the full documentation.
         'CONTAINER': 'ContainerName',
         'PYRAX_IDENTITY_TYPE': 'rackspace',
     }
-    DEFAULT_FILE_STORAGE = 'cumulus.storage.SwiftclientStorage'
+    DEFAULT_FILE_STORAGE = 'cumulus.storage.CumulusStorage'
 
 The ``PYRAX_IDENTITY_TYPE`` parameter can either be ``rackspace`` or ``keystone``
 depending on whether you use Rackspace or OpenStack respectively.
@@ -71,3 +77,14 @@ depending on whether you use Rackspace or OpenStack respectively.
 .. _file issues: https://github.com/django-cumulus/django-cumulus/issues/
 .. _in-development version: https://github.com/django-cumulus/django-cumulus/tarball/master#egg=django-cumulus-dev
 .. _the changelog: http://django-cumulus.readthedocs.org/en/latest/changelog.html
+
+.. |build| image:: https://secure.travis-ci.org/django-cumulus/django-cumulus.png?branch=master
+.. _build: http://travis-ci.org/#!/django-cumulus/django-cumulus
+.. |coverage| image:: https://coveralls.io/repos/django-cumulus/django-cumulus/badge.png?branch=master
+.. _coverage: https://coveralls.io/r/django-cumulus/django-cumulus
+.. |version| image:: https://img.shields.io/pypi/v/django-cumulus.svg
+.. _version: https://crate.io/packages/django-cumulus
+.. |requires| image:: https://requires.io/github/django-cumulus/django-cumulus/requirements.png?branch=master
+.. _requires: https://requires.io/github/django-cumulus/django-cumulus/requirements/?branch=master
+.. |docs| image:: https://readthedocs.org/projects/django-cumulus/badge/?version=latest
+.. _docs: https://readthedocs.org/projects/django-cumulus/?badge=latest

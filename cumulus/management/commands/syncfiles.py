@@ -1,44 +1,46 @@
 import datetime
 import fnmatch
-import mimetypes
-import optparse
 import os
-import pyrax
 import re
-import swiftclient
 
 from django.conf import settings
-from django.core.management import call_command
-from django.core.management.base import CommandError, NoArgsCommand
+from django.core.management.base import CommandError, BaseCommand
 
 
+from cumulus.authentication import Auth
 from cumulus.settings import CUMULUS
-from cumulus.storage import get_gzipped_contents
+from cumulus.storage import get_headers, get_content_type, get_gzipped_contents
 
 
-class Command(NoArgsCommand):
-    help = "Synchronizes media to cloud files."
-    option_list = NoArgsCommand.option_list + (
-        optparse.make_option("-i", "--include", action="append", default=[],
+class Command(BaseCommand):
+    help = "Synchronizes project static *or* media files to cloud files."
+
+    def add_arguments(self, parser):
+        parser.add_argument("-i", "--include", action="append", default=[],
                              dest="includes", metavar="PATTERN",
                              help="Include file or directories matching this glob-style "
                                   "pattern. Use multiple times to include more."),
-        optparse.make_option("-e", "--exclude", action="append", default=[],
+        parser.add_argument("-e", "--exclude", action="append", default=[],
                              dest="excludes", metavar="PATTERN",
                              help="Exclude files or directories matching this glob-style "
                                   "pattern. Use multiple times to exclude more."),
-        optparse.make_option("-w", "--wipe",
+        parser.add_argument("-w", "--wipe",
                              action="store_true", dest="wipe", default=False,
                              help="Wipes out entire contents of container first."),
-        optparse.make_option("-t", "--test-run",
+        parser.add_argument("-t", "--test-run",
                              action="store_true", dest="test_run", default=False,
                              help="Performs a test run of the sync."),
-        optparse.make_option("-q", "--quiet",
+        parser.add_argument("-q", "--quiet",
                              action="store_true", dest="test_run", default=False,
                              help="Do not display any output."),
-        optparse.make_option("-c", "--container",
-                             dest="container", help="Override CONTAINER."),
-    )
+        parser.add_argument("-c", "--container",
+                             dest="container", help="Override STATIC_CONTAINER."),
+        parser.add_argument("-s", "--static",
+                             action="store_true", dest="syncstatic", default=False,
+                             help="Sync static files located at settings.STATIC_ROOT path."),
+        parser.add_argument("-m", "--media",
+                             action="store_true", dest="syncmedia", default=False,
+                             help="Sync media files located at settings.MEDIA_ROOT path."),
 
     def set_options(self, options):
         """
@@ -50,24 +52,37 @@ class Command(NoArgsCommand):
         self.quiet = options.get("test_run")
         self.container_name = options.get("container")
         self.verbosity = int(options.get("verbosity"))
+        self.syncmedia = options.get("syncmedia")
+        self.syncstatic = options.get("syncstatic")
         if self.test_run:
             self.verbosity = 2
         cli_includes = options.get("includes")
         cli_excludes = options.get("excludes")
 
         # CUMULUS CONNECTION AND SETTINGS FROM SETTINGS.PY
+        if self.syncmedia and self.syncstatic:
+            raise CommandError("options --media and --static are mutually exclusive")
         if not self.container_name:
-            self.container_name = CUMULUS["CONTAINER"]
+            if self.syncmedia:
+                self.container_name = CUMULUS["CONTAINER"]
+            elif self.syncstatic:
+                self.container_name = CUMULUS["STATIC_CONTAINER"]
+            else:
+                raise CommandError("must select one of the required options, either --media or --static")
         settings_includes = CUMULUS["INCLUDE_LIST"]
         settings_excludes = CUMULUS["EXCLUDE_LIST"]
 
         # PATH SETTINGS
-        self.static_root = os.path.abspath(settings.MEDIA_ROOT)
-        self.static_url = settings.MEDIA_URL
-        if not self.static_root.endswith("/"):
-            self.static_root = self.static_root + "/"
-        if self.static_url.startswith("/"):
-            self.static_url = self.static_url[1:]
+        if self.syncmedia:
+            self.file_root = os.path.abspath(settings.MEDIA_ROOT)
+            self.file_url = settings.MEDIA_URL
+        elif self.syncstatic:
+            self.file_root = os.path.abspath(settings.STATIC_ROOT)
+            self.file_url = settings.STATIC_URL
+        if not self.file_root.endswith("/"):
+            self.file_root = self.file_root + "/"
+        if self.file_url.startswith("/"):
+            self.file_url = self.file_url[1:]
 
         # SYNCSTATIC VARS
         # combine includes and excludes from the cli and django settings file
@@ -81,63 +96,30 @@ class Command(NoArgsCommand):
         self.skip_count = 0
         self.delete_count = 0
 
-    def connect_container(self):
-        """
-        Connects to a container using the swiftclient api.
-
-        The container will be created and/or made public using the
-        pyrax api if not already so.
-        """
-        self.conn = swiftclient.Connection(authurl=CUMULUS["AUTH_URL"],
-                                           user=CUMULUS["USERNAME"],
-                                           key=CUMULUS["API_KEY"],
-                                           snet=CUMULUS["SERVICENET"],
-                                           auth_version=CUMULUS["AUTH_VERSION"],
-                                           tenant_name=CUMULUS["AUTH_TENANT_NAME"])
-        try:
-            self.conn.head_container(self.container_name)
-        except swiftclient.client.ClientException as exception:
-            if exception.msg == "Container HEAD failed":
-                call_command("container_create", self.container_name)
-            else:
-                raise
-
-        if CUMULUS["USE_PYRAX"]:
-            if CUMULUS["PYRAX_IDENTITY_TYPE"]:
-                pyrax.set_setting("identity_type", CUMULUS["PYRAX_IDENTITY_TYPE"])
-            public = not CUMULUS["SERVICENET"]
-            pyrax.set_credentials(CUMULUS["USERNAME"], CUMULUS["API_KEY"])
-            connection = pyrax.connect_to_cloudfiles(region=CUMULUS["REGION"],
-                                                     public=public)
-            container = connection.get_container(self.container_name)
-            if not container.cdn_enabled:
-                container.make_public(ttl=CUMULUS["TTL"])
-        else:
-            headers = {"X-Container-Read": ".r:*"}
-            self.conn.post_container(self.container_name, headers=headers)
-
-        self.container = self.conn.get_container(self.container_name, full_listing=True)
-
     def handle_noargs(self, *args, **options):
         # setup
         self.set_options(options)
-        self.connect_container()
+        self._connection = Auth()._get_connection()
+        self.container = self._connection.get_container(self.container_name)
 
         # wipe first
         if self.wipe:
             self.wipe_container()
 
         # match local files
-        abspaths = self.match_local(self.static_root, self.includes, self.excludes)
+        abspaths = self.match_local(self.file_root, self.includes, self.excludes)
         relpaths = []
         for path in abspaths:
-            filename = path.split(self.static_root)[1]
+            filename = path.split(self.file_root)[1]
             if filename.startswith("/"):
                 filename = filename[1:]
             relpaths.append(filename)
+
         if not relpaths:
-            raise CommandError("The MEDIA_ROOT directory is empty "
-                               "or all files have been ignored.")
+            settings_root_prefix = "MEDIA" if self.syncmedia else "STATIC"
+            raise CommandError("The {0}_ROOT directory is empty "
+                               "or all files have been ignored.".format(settings_root_prefix))
+
         for path in abspaths:
             if not os.path.isfile(path):
                 raise CommandError("Unsupported filetype: {0}.".format(path))
@@ -146,8 +128,9 @@ class Command(NoArgsCommand):
         cloud_objs = self.match_cloud(self.includes, self.excludes)
 
         remote_objects = {
-            obj['name']: datetime.datetime.strptime(obj['last_modified'],
-                                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container[1]
+            obj.name: datetime.datetime.strptime(
+                obj.last_modified,
+                "%Y-%m-%dT%H:%M:%S.%f") for obj in self.container.get_objects()
         }
 
         # sync
@@ -161,7 +144,7 @@ class Command(NoArgsCommand):
         """
         Returns the cloud objects that match the include and exclude patterns.
         """
-        cloud_objs = [cloud_obj["name"] for cloud_obj in self.container[1]]
+        cloud_objs = [cloud_obj.name for cloud_obj in self.container.get_objects()]
         includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
         excludes_pattern = r"|".join([fnmatch.translate(x) for x in excludes]) or r"$."
         excludes = [o for o in cloud_objs if re.match(excludes_pattern, o)]
@@ -196,7 +179,7 @@ class Command(NoArgsCommand):
         Determines files to be uploaded and call ``upload_file`` on each.
         """
         for relpath in relpaths:
-            abspath = [p for p in abspaths if p.endswith(relpath)][0]
+            abspath = [p for p in abspaths if p[len(self.file_root):] == relpath][0]
             cloud_datetime = remote_objects[relpath] if relpath in remote_objects else None
             local_datetime = datetime.datetime.utcfromtimestamp(os.stat(abspath).st_mtime)
 
@@ -216,26 +199,26 @@ class Command(NoArgsCommand):
         Uploads a file to the container.
         """
         if not self.test_run:
-            headers = None
-            contents = open(abspath, "rb")
-            size = os.stat(abspath).st_size
+            content = open(abspath, "rb")
+            content_type = get_content_type(cloud_filename, content)
+            headers = get_headers(cloud_filename, content_type)
 
-            mime_type, encoding = mimetypes.guess_type(abspath)
-            if mime_type in CUMULUS.get("GZIP_CONTENT_TYPES", []):
-                headers = {"Content-Encoding": "gzip"}
-                contents = get_gzipped_contents(contents)
-                size = contents.size
+            if headers.get("Content-Encoding") == "gzip":
+                content = get_gzipped_contents(content)
+                size = content.size
+            else:
+                size = os.stat(abspath).st_size
+            self.container.create(
+                obj_name=cloud_filename,
+                data=content,
+                content_type=content_type,
+                content_length=size,
+                content_encoding=headers.get("Content-Encoding", None),
+                headers=headers,
+                ttl=CUMULUS["FILE_TTL"],
+                etag=None,
+            )
 
-            self.conn.put_object(container=self.container_name,
-                                 obj=cloud_filename,
-                                 contents=contents,
-                                 content_length=size,
-                                 etag=None,
-                                 content_type=mime_type,
-                                 headers=headers)
-            # TODO syncheaders
-            #from cumulus.storage import sync_headers
-            #sync_headers(cloud_obj)
         self.upload_count += 1
         if not self.quiet or self.verbosity > 1:
             print("Uploaded: {0}".format(cloud_filename))
@@ -256,20 +239,21 @@ class Command(NoArgsCommand):
         """
         Deletes an object from the container.
         """
-        self.conn.delete_object(container=self.container_name,
-                                obj=cloud_obj)
+        self._connection.delete_object(
+            container=self.container_name,
+            obj=cloud_obj,
+        )
 
     def wipe_container(self):
         """
         Completely wipes out the contents of the container.
         """
         if self.test_run:
-            print("Wipe would delete {0} objects.".format(len(self.container[1])))
+            print("Wipe would delete {0} objects.".format(len(self.container.object_count)))
         else:
             if not self.quiet or self.verbosity > 1:
-                print("Deleting {0} objects...".format(len(self.container[1])))
-            for cloud_obj in self.container[1]:
-                self.conn.delete_object(self.container_name, cloud_obj["name"])
+                print("Deleting {0} objects...".format(len(self.container.object_count)))
+            self._connection.delete_all_objects()
 
     def print_tally(self):
         """
