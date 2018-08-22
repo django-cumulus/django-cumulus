@@ -1,9 +1,28 @@
 changelog
 =========
 
+Version 1.2, (in progress)
+********************************
+
+* Revive the changelog
+* Rename legacy SwiftclientStorage to CumulusStorage (keeping backwards compatibility)
+* Fix Django 1.7 support
+* Bugfixes
+
+
+Version 1.0.13, 1 September 2014
+********************************
+
+* Revive the changelog
+* Among other things django-cumulus is based on pyrax
+* New people taking care of this project now
+* Too much history to list here, sorry
+
 Version 1.0.5, 30 January 2012
 ******************************
 
+* Combine syncstatic and syncmedia into to syncfiles (backwards
+  incompatible change)
 * Added CloudFilesStaticStorage subclass for collectstatic compatability
 * Added thread-safe CloudFilesStorage subclass
 * Added four new management commands
