@@ -30,6 +30,11 @@ CUMULUS = {
     "PYRAX_IDENTITY_TYPE": 'rackspace',
     "FILE_TTL": None,
     "FAIL_SILENTLY": True,
+    'PUBLIC': True,
+    'X_ACCOUNT_META_TEMP_URL_KEY': None,
+    'X_STORAGE_URL': None,
+    'X_TEMP_URL_TIMEOUT': 600,
+    'X_TEMP_URL_BASE': 'https://storage101.dfw1.clouddrive.com'
 }
 
 if hasattr(settings, "CUMULUS"):

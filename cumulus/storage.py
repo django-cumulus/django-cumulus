@@ -3,7 +3,12 @@ import pyrax
 import re
 import warnings
 from gzip import GzipFile
-
+import hmac
+from time import time
+try:
+    from haslib import sha1 as sha
+except:
+    import sha
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -109,6 +114,12 @@ class CumulusStorage(Auth, Storage):
     file_ttl = CUMULUS["FILE_TTL"]
     use_ssl = CUMULUS["USE_SSL"]
 
+    public = CUMULUS['PUBLIC']
+    x_meta_temp_url_key = CUMULUS['X_ACCOUNT_META_TEMP_URL_KEY']
+    x_storage_url = CUMULUS['X_STORAGE_URL']
+    x_temp_url_timeout = CUMULUS['X_TEMP_URL_TIMEOUT']
+    base_url = CUMULUS['X_TEMP_URL_BASE']
+
     def _open(self, name, mode="rb"):
         """
         Returns the CumulusStorageFile.
@@ -185,7 +196,24 @@ class CumulusStorage(Auth, Storage):
         Returns an absolute URL where the content of each file can be
         accessed directly by a web browser.
         """
-        return u"{0}/{1}".format(self.container_url, name)
+        if self.public:
+            return "{0}/{1}".format(self.container_url, name)
+        else:
+            return self._get_temp_url(name)
+
+    def _get_temp_url(self, name):
+        """
+        Returns an absolute, temporary URL where the file's contents can be
+        accessed directly by a web browser.
+        """
+        method = 'GET'
+        expires = int(time() + self.x_temp_url_timeout)
+        key = self.x_meta_temp_url_key
+        path = '{0}/{1}/{2}'.format(self.x_storage_url, self.container_name, name)
+        hmac_body = '{0}\n{1}\n{2}'.format(method, expires, path)
+        sig = hmac.new(key, hmac_body, sha).hexdigest()
+        return  '{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(self.base_url, path, sig, 
+                                                                expires)
 
     def listdir(self, path):
         """
