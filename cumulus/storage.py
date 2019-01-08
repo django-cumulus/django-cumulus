@@ -197,7 +197,7 @@ class CumulusStorage(Auth, Storage):
         accessed directly by a web browser.
         """
         if self.public:
-            return "{0}/{1}".format(self.container_url, name)
+            return u"{0}/{1}".format(self.container_url, name)
         else:
             return self._get_temp_url(name)
 
@@ -209,10 +209,10 @@ class CumulusStorage(Auth, Storage):
         method = 'GET'
         expires = int(time() + self.x_temp_url_timeout)
         key = self.x_meta_temp_url_key
-        path = '{0}/{1}/{2}'.format(self.x_storage_url, self.container_name, name)
-        hmac_body = '{0}\n{1}\n{2}'.format(method, expires, path)
+        path = u'{0}/{1}/{2}'.format(self.x_storage_url, self.container_name, name)
+        hmac_body = u'{0}\n{1}\n{2}'.format(method, expires, path)
         sig = hmac.new(key, hmac_body, sha).hexdigest()
-        return  '{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(self.base_url, path, sig, 
+        return  u'{0}{1}?temp_url_sig={2}&temp_url_expires={3}'.format(self.base_url, path, sig,
                                                                 expires)
 
     def listdir(self, path):
